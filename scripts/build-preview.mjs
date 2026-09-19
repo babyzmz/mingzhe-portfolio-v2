@@ -24,6 +24,10 @@ copyTree('styles','preview/styles');copyTree('public','preview');
 const {renderSite}=await import(pathToFileURL(path.join(root,'preview/app/views.js')).href+'?build='+Date.now());
 let html=fs.readFileSync('index.html','utf8').replace('<!--APP-->',renderSite('en')).replace('./src/main.ts','./app/main.js');
 fs.writeFileSync('preview/index.html',html);fs.writeFileSync('preview/.nojekyll','');
+// Standalone base markup is pre-rendered with the single-file gate so no
+// external ./media references ship in the offline file (the runtime bundle
+// re-renders with the same gate via window.__PORTFOLIO_SINGLE_FILE__).
+let sfHtml=fs.readFileSync('index.html','utf8').replace('<!--APP-->',renderSite('en',{singleFile:true})).replace('./src/main.ts','./app/main.js');
 // Genuine offline, file:// runnable edition. Compile each TS module to CommonJS
 // and use a small local module loader. Missing optional GSAP imports are caught
 // by gsap-adapter and select the documented native scroll backend.
@@ -35,8 +39,8 @@ for(const file of fs.readdirSync('src').filter(f=>f.endsWith('.ts')&&!f.endsWith
 let bundle=`(()=>{const modules={${modules.join(',\n')}};const cache={};function load(id){if(id.startsWith('./'))id=id.slice(2);if(cache[id])return cache[id].exports;if(!modules[id])throw new Error('Optional dependency not bundled: '+id);const module={exports:{}};cache[id]=module;modules[id](load,module,module.exports);return module.exports;}load('main.js');})();`;
 const pdf='data:application/pdf;base64,'+fs.readFileSync('public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').toString('base64');
 bundle=bundle.replaceAll('./documents/Mingzhe_Zhang_AI_Developer_Resume.pdf',pdf);
-html=html.replace(/<link rel="stylesheet" href="\.\/styles\/([^\"]+)">/g,(_,f)=>`<style>${fs.readFileSync('styles/'+f,'utf8')}</style>`);
-html=html.replace('<script type="module" src="./app/main.js"></script>','<script>window.__PORTFOLIO_SINGLE_FILE__=true</script><script>'+bundle.replaceAll('</script','<\\/script')+'</script>');
-html=html.replaceAll('./documents/Mingzhe_Zhang_AI_Developer_Resume.pdf',pdf).replace('./assets/favicon.svg','data:image/svg+xml;base64,'+fs.readFileSync('public/assets/favicon.svg').toString('base64'));
-fs.writeFileSync('Mingzhe-Portfolio-Preview.html',html);
+sfHtml=sfHtml.replace(/<link rel="stylesheet" href="\.\/styles\/([^\"]+)">/g,(_,f)=>`<style>${fs.readFileSync('styles/'+f,'utf8')}</style>`);
+sfHtml=sfHtml.replace('<script type="module" src="./app/main.js"></script>','<script>window.__PORTFOLIO_SINGLE_FILE__=true</script><script>'+bundle.replaceAll('</script','<\\/script')+'</script>');
+sfHtml=sfHtml.replaceAll('./documents/Mingzhe_Zhang_AI_Developer_Resume.pdf',pdf).replace('./assets/favicon.svg','data:image/svg+xml;base64,'+fs.readFileSync('public/assets/favicon.svg').toString('base64'));
+fs.writeFileSync('Mingzhe-Portfolio-Preview.html',sfHtml);
 console.log('Built preview/ and standalone Mingzhe-Portfolio-Preview.html. No network dependencies required.');

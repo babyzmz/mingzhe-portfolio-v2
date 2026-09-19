@@ -23,7 +23,8 @@ function art(p:Project):string{
  return '<div class="mini-converter"><span>.a</span><b>↔</b><span>.b</span></div><span class="art-note">PYTHON / DESKTOP UTILITY</span>';
 }
 /** Labelled illustration fallback stays until an approved screenshot exists. */
-const isSingleFileEdition=()=>typeof window!=='undefined'&&(window as unknown as {__PORTFOLIO_SINGLE_FILE__?:boolean}).__PORTFOLIO_SINGLE_FILE__===true;
+let ssrSingleFile=false;
+const isSingleFileEdition=()=>ssrSingleFile||(typeof window!=='undefined'&&(window as unknown as {__PORTFOLIO_SINGLE_FILE__?:boolean}).__PORTFOLIO_SINGLE_FILE__===true);
 function cardArt(p:Project,lang:Locale,eager=false):string{
  const cover=isSingleFileEdition()?null:coverFor(p.id as ProjectId);
  return cover?coverFigure(cover,lang,eager):art(p);
@@ -51,7 +52,9 @@ export function card(p:Project,lang:Locale,index:number):string{
  <div class="project-topline"><span>${esc(c.category)}</span><span>${p.kind==='ai'?'↗':'↳'}</span></div><h3><button data-case="${p.id}">${esc(p.name)}</button></h3>
  <p>${esc(c.summary)}</p><div class="project-bottom"><span>${esc(accessLabel)}</span><button data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}">${plus}</button></div></article>`;
 }
-export function renderSite(lang:Locale):string{
+export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
+ ssrSingleFile=opts.singleFile===true;
+ try{
  const t=text[lang];
  const btn=(id:string,label=t.case)=>`<button class="text-button" data-case="${id}">${esc(label)}<span>${arrow}</span></button>`;
  return `<a class="skip-link" href="#work">${t.skip}</a>
@@ -100,6 +103,7 @@ export function renderSite(lang:Locale):string{
  </main><footer class="footer"><a class="brand" href="#home">${mark}<span>MINGZHE.</span></a><p>${t.footer}</p><button data-evidence>${t.evidence}</button><a href="#home" class="back-top" aria-label="${t.back}">↑</a></footer>
  <aside class="chapter-rail" aria-label="${t.index}">${['home','fairy','core','mojo','method'].map((id,i)=>`<a href="#${id}" data-rail="${i}" aria-label="${['Intro','Fairy','MojoCore','MojoClaw & MojoAX',t.navMethod][i]}"><span>${String(i).padStart(2,'0')}</span><i></i></a>`).join('')}</aside>
  <div class="motion-dock"><span class="render-status"><i></i><span data-render-label>${t.live}</span></span><button data-motion aria-label="${t.motionOn}" aria-pressed="false"><span class="pause-icon"><i></i><i></i></span><span class="motion-label">${t.motionOn}</span></button></div>`;
+ }finally{ssrSingleFile=false;}
 }
 export function renderCase(p:Project,lang:Locale):string{
  const c=p[lang],t=text[lang],d=caseStudies[p.id][lang],l=caseLabels[lang];
