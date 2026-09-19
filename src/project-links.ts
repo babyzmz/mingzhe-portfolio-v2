@@ -36,10 +36,20 @@ export const projectLinks: Record<ProjectId, ProjectLink[]> = {
  ax: [],
  dreambound: [
   {
+   kind: 'demo',
+   url: 'https://babyzmz.github.io/mingzhe-portfolio-v2/demos/dreambound/index.html',
+   label: {en: 'Play the Canvas/WebGL demo', zh: '试玩 Canvas/WebGL 版'},
+   accessNote: {en: 'Keyboard: WASD or arrow keys to move, J/Z or Enter to attack, E/F to interact, Space for the skill.', zh: '键盘操作：WASD 或方向键移动，J/Z/回车攻击，E/F 交互，空格释放技能。'},
+   verifiedAt: '2026-09-19T04:05:00Z',
+   access: 'public',
+   verification: 'verified',
+   publication: 'approved'
+  },
+  {
    kind: 'record',
    url: 'https://github.com/babyzmz/mingzhe-portfolio/tree/main/demos/dreambound',
    label: {en: 'Original Dreambound record', zh: 'Dreambound 原始项目记录'},
-   accessNote: {en: 'The public copy is missing js/core/game.js; the playable source was recovered locally.', zh: '公开副本缺少 js/core/game.js；可运行脚本已在本地找回。'},
+   accessNote: {en: 'The older public copy is missing js/core/game.js; the playable build on this site was recovered from the local original.', zh: '较早的公开副本缺少 js/core/game.js；本站试玩版由本地原版恢复。'},
    verifiedAt: '2026-09-19T01:02:00Z',
    access: 'public',
    verification: 'verified',

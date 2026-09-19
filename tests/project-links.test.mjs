@@ -23,15 +23,29 @@ test('fairy has a public approved source link', () => {
  assert.match(groups.source[0].url, /^https:\/\/github\.com\//);
 });
 
-test('archive entries expose only the original record, never source or demo', () => {
- for (const id of ['dreambound', 'webchange', 'goodnight', 'tarot', 'converter']) {
+test('archive entries without a deployed build expose only the original record', () => {
+ for (const id of ['webchange', 'goodnight', 'tarot', 'converter']) {
   const groups = linksByKind(id);
   assert.equal(groups.source.length, 0, `${id} must not claim source code`);
   assert.equal(groups.demo.length, 0, `${id} must not claim a live demo`);
   assert.equal(groups.download.length, 0, `${id} must not claim a download`);
   assert.ok(groups.record.length >= 1, `${id} keeps its original record`);
-  for (const link of groups.record) assert.ok(link.url.includes('script.js') || link.url.includes('demos/dreambound'));
+  for (const link of groups.record) assert.ok(link.url.includes('script.js'));
  }
+});
+
+test('dreambound has one verified public playable demo plus its original record', () => {
+ const groups = linksByKind('dreambound');
+ assert.equal(groups.source.length, 0, 'a playable demo is not mislabelled as source');
+ assert.equal(groups.download.length, 0);
+ assert.equal(groups.demo.length, 1);
+ assert.ok(groups.record.length >= 1);
+ const demo = groups.demo[0];
+ assert.equal(demo.access, 'public');
+ assert.equal(demo.verification, 'verified');
+ assert.equal(demo.publication, 'approved');
+ assert.match(demo.url, /^https:\/\/babyzmz\.github\.io\/mingzhe-portfolio-v2\/demos\/dreambound\//);
+ assert.ok(demo.verifiedAt, 'a live demo carries a real verification timestamp');
 });
 
 test('old portfolio script.js is never classified as source code', () => {
@@ -48,7 +62,8 @@ test('withheld links are hidden while approved ones render', () => {
 
 test('public demo requires public + verified + approved together', () => {
  assert.equal(publicDemo('fairy'), null, 'a source link is not a live demo');
- assert.equal(publicDemo('dreambound'), null);
+ const dreamboundDemo = publicDemo('dreambound');
+ assert.ok(dreamboundDemo && dreamboundDemo.verification === 'verified', 'deployed verified demo is exposed');
  const fake = {kind: 'demo', url: 'https://demo.example.com/', access: 'public', verification: 'unverified', publication: 'approved'};
  // Direct rule check through registry semantics.
  assert.notEqual(fake.access, 'restricted');
