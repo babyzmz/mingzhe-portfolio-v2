@@ -1,0 +1,182 @@
+[
+  {
+    "test": "identity and first heading visible",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "all nine projects rendered",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "no desktop overflow",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "actual 3D renderer initialized",
+    "pass": true,
+    "detail": "software-3d"
+  },
+  {
+    "test": "document is not bound as a motion button",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "camera advances in world Z",
+    "pass": true,
+    "detail": "7.0 -> -25.0"
+  },
+  {
+    "test": "camera reverses to start",
+    "pass": true,
+    "detail": "7.0"
+  },
+  {
+    "test": "Chinese locale applied",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "Chinese heading rendered",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case dialog opens",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case limitations are present",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "dialog closes with Escape",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "dialog returns keyboard focus",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "CV file exists and embedded download is real",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "motion button changes actual state",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "archive filter shows five",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "AI filter shows four",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "all filter restores nine",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: fairy",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: core",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: claw",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: ax",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: dreambound",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: webchange",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: goodnight",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: tarot",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "case readable: converter",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "source disclosure opens",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "no uncaught JS errors",
+    "pass": true,
+    "detail": []
+  },
+  {
+    "test": "no mobile overflow",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "mobile navigation opens",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "mobile navigation closes after selection",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "Chinese mobile content stays within viewport",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "reduced motion respected",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "reduced motion preserves all content",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "test": "renderer failure keeps text accessible",
+    "pass": true,
+    "detail": ""
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "type": "text/html; charset=utf-8",
+    "bytes": 25245
+  },
+  {
+    "path": "/styles/site.css",
+    "status": 200,
+    "type": "text/css; charset=utf-8",
+    "bytes": 18532
+  },
+  {
+    "path": "/app/main.js",
+    "status": 200,
+    "type": "text/javascript; charset=utf-8",
+    "bytes": 7374
+  },
+  {
+    "path": "/assets/favicon.svg",
+    "status": 200,
+    "type": "image/svg+xml",
+    "bytes": 243
+  },
+  {
+    "path": "/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf",
+    "status": 200,
+    "type": "application/pdf",
+    "bytes": 72040
+  }
+]

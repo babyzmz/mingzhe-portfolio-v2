@@ -1,0 +1,1 @@
+Persisted lifecycle event handling: passed

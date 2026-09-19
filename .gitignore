@@ -1,0 +1,12 @@
+node_modules/
+dist/
+preview/
+.test-build/
+.DS_Store
+/test-artifacts/
+
+/test-artifacts-v21/
+
+# Private handoff data: local source map, raw captures, sensitive logs.
+# Never imported from src/, copied into public/, or included in release bundles.
+.handoff-private/

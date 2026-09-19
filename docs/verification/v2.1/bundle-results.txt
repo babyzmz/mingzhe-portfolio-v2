@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: offline bundled JavaScript parses as an actual classic script
+ok 1 - offline bundled JavaScript parses as an actual classic script
+  ---
+  duration_ms: 4.553314
+  type: 'test'
+  ...
+# Subtest: offline edition has no network script or stylesheet requirements
+ok 2 - offline edition has no network script or stylesheet requirements
+  ---
+  duration_ms: 3.640378
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 56.042827

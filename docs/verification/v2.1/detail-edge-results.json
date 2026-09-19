@@ -1,0 +1,27 @@
+[
+  {
+    "test": "Escape during opening cleans up",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "rapid next clicks leave one final case and no stale transition",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "backdrop click runs the close path",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "source notes still open and scroll inside the reusable sheet",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "no uncaught script errors in desktop interaction paths",
+    "pass": true,
+    "detail": []
+  }
+]

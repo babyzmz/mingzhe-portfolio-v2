@@ -1,0 +1,94 @@
+[
+  {
+    "test": "case fits viewport 320x740",
+    "pass": true,
+    "detail": {
+      "scroll": 320,
+      "visible": 320
+    }
+  },
+  {
+    "test": "close button remains reachable 320x740",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "mobile internal reading scroll works 320",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "case fits viewport 390x844",
+    "pass": true,
+    "detail": {
+      "scroll": 390,
+      "visible": 390
+    }
+  },
+  {
+    "test": "close button remains reachable 390x844",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "mobile internal reading scroll works 390",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "case fits viewport 768x1024",
+    "pass": true,
+    "detail": {
+      "scroll": 718,
+      "visible": 718
+    }
+  },
+  {
+    "test": "close button remains reachable 768x1024",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "mobile internal reading scroll works 768",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "case fits viewport 844x390",
+    "pass": true,
+    "detail": {
+      "scroll": 794,
+      "visible": 794
+    }
+  },
+  {
+    "test": "close button remains reachable 844x390",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "mobile internal reading scroll works 844",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "OS reduced motion skips the sheet animation",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "reduced-motion content is never hidden for a reveal",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "reduced motion still opens the glossary",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "detail animation does not depend on WebGL",
+    "pass": true,
+    "detail": null
+  }
+]

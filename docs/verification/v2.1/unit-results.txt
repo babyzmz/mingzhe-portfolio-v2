@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: detailed case-study content exists
+ok 1 - detailed case-study content exists
+  ---
+  duration_ms: 1.417838
+  type: 'test'
+  ...
+# Subtest: all nine projects have substantive bilingual case content
+ok 2 - all nine projects have substantive bilingual case content
+  ---
+  duration_ms: 1.819093
+  type: 'test'
+  ...
+# Subtest: illustrations and historical gaps are never described as verified demos
+ok 3 - illustrations and historical gaps are never described as verified demos
+  ---
+  duration_ms: 0.301605
+  type: 'test'
+  ...
+# Subtest: project content module exists
+ok 4 - project content module exists
+  ---
+  duration_ms: 0.533124
+  type: 'test'
+  ...
+# Subtest: four flagship and five original projects are retained
+ok 5 - four flagship and five original projects are retained
+  ---
+  duration_ms: 0.435426
+  type: 'test'
+  ...
+# Subtest: all cases have complete bilingual evidence and contribution scope
+ok 6 - all cases have complete bilingual evidence and contribution scope
+  ---
+  duration_ms: 0.213021
+  type: 'test'
+  ...
+# Subtest: private project sources are not exported as public source links
+ok 7 - private project sources are not exported as public source links
+  ---
+  duration_ms: 0.191539
+  type: 'test'
+  ...
+# Subtest: camera module exists before exercising real behaviour
+ok 8 - camera module exists before exercising real behaviour
+  ---
+  duration_ms: 0.585082
+  type: 'test'
+  ...
+# Subtest: camera translates in depth through all five stations
+ok 9 - camera translates in depth through all five stations
+  ---
+  duration_ms: 0.679254
+  type: 'test'
+  ...
+# Subtest: camera path is deterministic in reverse
+ok 10 - camera path is deterministic in reverse
+  ---
+  duration_ms: 0.783541
+  type: 'test'
+  ...
+# Subtest: progress clamps extreme input and locale never accepts arbitrary markup
+ok 11 - progress clamps extreme input and locale never accepts arbitrary markup
+  ---
+  duration_ms: 0.198789
+  type: 'test'
+  ...
+# Subtest: section progress can be restored at a deep scroll position
+ok 12 - section progress can be restored at a deep scroll position
+  ---
+  duration_ms: 0.130897
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 57.445037

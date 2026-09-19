@@ -1,0 +1,483 @@
+{
+  "count": 83,
+  "passed": 83,
+  "checks": [
+    {
+      "test": "story entry starts a real running opening animation",
+      "pass": true,
+      "detail": {
+        "phase": "opening",
+        "active": 1,
+        "matrix": "matrix(0.930926, 0, 0, 0.930926, -74.762, 35.3715)"
+      }
+    },
+    {
+      "test": "opening changes actual rendered transform over time",
+      "pass": true,
+      "detail": {
+        "first": "matrix(0.930926, 0, 0, 0.930926, -74.762, 35.3715)",
+        "later": "matrix(0.980134, 0, 0, 0.980134, -21.5016, 10.1728)"
+      }
+    },
+    {
+      "test": "five reading chapters are present",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "Fairy explains documents, tools and project purpose",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "page scroll is locked while reading",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "workflow navigation moves the dialog, not the background",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "reading progress responds to internal scrolling",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "workflow TOC item identifies current section",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "flow is labelled illustrative",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "workflow has a concrete input and four stages",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "six explanatory feature cards rather than only keywords",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "visible feature cards finish their section reveals",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "glossary expansion has a real running height animation",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "glossary visibly expands instead of instantly appearing",
+      "pass": true,
+      "detail": {
+        "initial": 0,
+        "later": 244.8125
+      }
+    },
+    {
+      "test": "glossary supplies plain-language definitions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "glossary closes with correct accessibility state",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "close waits for its exit animation before native close",
+      "pass": true,
+      "detail": {
+        "open": true,
+        "phase": "closing",
+        "active": true
+      }
+    },
+    {
+      "test": "closing restores page scroll and the original CTA focus",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "body scroll lock is cleaned up",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "archive artwork uses the same opening animation",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "Core explains refresh recovery and is not called Fairy backend",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "next-project navigation has an animated transition",
+      "pass": true,
+      "detail": "switching"
+    },
+    {
+      "test": "next-project content and reading position reset",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "locale switch also updates the open case",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "focus returns after locale rebuilt the underlying site",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/fairy",
+      "pass": true,
+      "detail": {
+        "characters": 4437
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/fairy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/core",
+      "pass": true,
+      "detail": {
+        "characters": 4219
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/core",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/claw",
+      "pass": true,
+      "detail": {
+        "characters": 3617
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/claw",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/ax",
+      "pass": true,
+      "detail": {
+        "characters": 4035
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/ax",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/dreambound",
+      "pass": true,
+      "detail": {
+        "characters": 3115
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/dreambound",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/webchange",
+      "pass": true,
+      "detail": {
+        "characters": 2866
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/webchange",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/goodnight",
+      "pass": true,
+      "detail": {
+        "characters": 2686
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/goodnight",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/tarot",
+      "pass": true,
+      "detail": {
+        "characters": 2823
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/tarot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: en/converter",
+      "pass": true,
+      "detail": {
+        "characters": 2818
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: en/converter",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/fairy",
+      "pass": true,
+      "detail": {
+        "characters": 1629
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/fairy",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/core",
+      "pass": true,
+      "detail": {
+        "characters": 1599
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/core",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/claw",
+      "pass": true,
+      "detail": {
+        "characters": 1395
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/claw",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/ax",
+      "pass": true,
+      "detail": {
+        "characters": 1476
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/ax",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/dreambound",
+      "pass": true,
+      "detail": {
+        "characters": 1319
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/dreambound",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "Dreambound records the missing script, not a playable promise",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/webchange",
+      "pass": true,
+      "detail": {
+        "characters": 1103
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/webchange",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/goodnight",
+      "pass": true,
+      "detail": {
+        "characters": 1032
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/goodnight",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/tarot",
+      "pass": true,
+      "detail": {
+        "characters": 1083
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/tarot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "complete readable case: zh/converter",
+      "pass": true,
+      "detail": {
+        "characters": 1063
+      }
+    },
+    {
+      "test": "case has source and limitation disclosure: zh/converter",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "Escape during opening cleans up",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "rapid next clicks leave one final case and no stale transition",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "backdrop click runs the close path",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "source notes still open and scroll inside the reusable sheet",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "no uncaught script errors in desktop interaction paths",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "test": "case fits viewport 320x740",
+      "pass": true,
+      "detail": {
+        "scroll": 320,
+        "visible": 320
+      }
+    },
+    {
+      "test": "close button remains reachable 320x740",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "mobile internal reading scroll works 320",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "case fits viewport 390x844",
+      "pass": true,
+      "detail": {
+        "scroll": 390,
+        "visible": 390
+      }
+    },
+    {
+      "test": "close button remains reachable 390x844",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "mobile internal reading scroll works 390",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "case fits viewport 768x1024",
+      "pass": true,
+      "detail": {
+        "scroll": 718,
+        "visible": 718
+      }
+    },
+    {
+      "test": "close button remains reachable 768x1024",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "mobile internal reading scroll works 768",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "case fits viewport 844x390",
+      "pass": true,
+      "detail": {
+        "scroll": 794,
+        "visible": 794
+      }
+    },
+    {
+      "test": "close button remains reachable 844x390",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "mobile internal reading scroll works 844",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "OS reduced motion skips the sheet animation",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "reduced-motion content is never hidden for a reveal",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "reduced motion still opens the glossary",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "test": "detail animation does not depend on WebGL",
+      "pass": true,
+      "detail": null
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "mingzhe-systems-in-motion", "version": "2.1.0", "private": true, "type": "module",
+  "scripts": {"dev":"vite --host 127.0.0.1", "build":"tsc --noEmit && vite build", "preview":"vite preview --host 127.0.0.1", "build:offline":"node scripts/build-preview.mjs", "start":"node scripts/serve.mjs", "privacy-check":"node scripts/privacy-check.mjs", "test":"node scripts/test.mjs", "typecheck":"tsc --noEmit"},
+  "dependencies": {"gsap":"3.15.0"},
+  "devDependencies": {"typescript":"^5.8.3", "vite":"^6.3.5"}
+}

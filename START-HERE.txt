@@ -1,0 +1,22 @@
+MINGZHE — SYSTEMS IN MOTION · v2.1
+
+本次更新：项目展开动画 + 九个项目中英文详细介绍
+
+1. 解压整个工程包。
+2. 用 Chrome 或 Edge 打开根目录 Mingzhe-Portfolio-Preview.html。
+3. 从“深入了解项目”或“全部项目”的任意卡片进入详情。
+4. 留意展开、关闭、章节滚动、下一项目、术语折叠的真实动画。
+5. 详情顶栏可中英文切换、上/下一项目；关闭后回到原位置。
+
+若电脑开启“减少动态效果”，或网站右下角关闭动画，详情将按设置减少动画。
+请不要误开上次下载的旧版 HTML。
+
+单文件无需安装依赖，无需 API 密钥。外部 GitHub 链接需要联网。
+有 Node.js 时可运行 start-preview.bat 预览 preview/ 静态网站。
+源码 src/；样式 styles/；详细说明 README.md。
+
+新详情动画独立于 WebGL 和 GSAP，可在单文件里直接运行。
+首页 3D 保留 WebGL / 软件 3D / 静态降级；本环境未验证 GPU 或 npm/Vite/GSAP 构建。
+源码依据、旧项目资料限制、实际测试记录见 docs/CONTENT_AUDIT.md 和 docs/VERIFICATION.md。
+
+未修改线上网站，未推送 GitHub main。

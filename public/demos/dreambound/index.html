@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dreambound Realm</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <canvas id="gameCanvas" aria-label="Dreambound Realm game canvas"></canvas>
+
+  <div id="hud" class="hud">
+    <div class="hud-row">
+      <div class="brand">Dreambound Realm</div>
+      <div id="roomReadout" class="pill">Layer 1 - Room 1</div>
+      <div id="buildReadout" class="pill">Waking Blade</div>
+    </div>
+    <div class="hud-row hud-row-bottom">
+      <div class="meter">
+        <div class="meter-label">HP</div>
+        <div class="meter-track"><div id="hpFill" class="meter-fill hp"></div></div>
+        <div id="hpText" class="meter-value">100 / 100</div>
+      </div>
+      <div class="meter small">
+        <div class="meter-label">Skill</div>
+        <div class="meter-track"><div id="skillFill" class="meter-fill skill"></div></div>
+        <div id="skillText" class="meter-value">Ready</div>
+      </div>
+      <div id="modifierReadout" class="modifier-list"></div>
+    </div>
+    <div id="bossHud" class="boss-hud hidden">
+      <div class="boss-name">Echo Knight</div>
+      <div class="boss-track"><div id="bossFill" class="boss-fill"></div></div>
+    </div>
+  </div>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <div id="choicePanel" class="overlay hidden">
+    <div class="choice-shell">
+      <div id="choiceTitle" class="choice-title">Dream Blessing</div>
+      <div id="choiceSubtitle" class="choice-subtitle">Choose one</div>
+      <div id="choiceList" class="choice-list"></div>
+    </div>
+  </div>
+
+  <div id="titleScreen" class="overlay title-screen">
+    <div class="title-shell">
+      <div class="title-copy">
+        <div class="title-kicker">Chapter I - Memory Tide</div>
+        <h1>Dreambound Realm</h1>
+        <button id="startButton" class="primary-button">Begin Memory Tide</button>
+      </div>
+      <div class="title-art" aria-hidden="true">
+        <img class="portrait portrait-knight" src="./bb.webp" alt="">
+        <img class="portrait portrait-princess" src="./princesskappa.webp" alt="">
+        <img class="portrait portrait-dark" src="./draklord.webp" alt="">
+      </div>
+    </div>
+  </div>
+
+  <div id="endScreen" class="overlay hidden">
+    <div class="title-shell">
+      <div id="endKicker" class="title-kicker">Dream Resolved</div>
+      <h1 id="endTitle">Chapter Cleared</h1>
+      <button id="restartButton" class="primary-button">Run Again</button>
+    </div>
+  </div>
+
+  <script src="./js/core/utils.js"></script>
+  <script src="./js/core/input.js"></script>
+  <script src="./js/core/renderer.js"></script>
+  <script src="./js/generated/animationManifest.js"></script>
+  <script src="./js/core/assets.js"></script>
+  <script src="./js/entities/entity.js"></script>
+  <script src="./js/systems/dreamModifiers.js"></script>
+  <script src="./js/systems/combat.js"></script>
+  <script src="./js/entities/player.js"></script>
+  <script src="./js/entities/enemies.js"></script>
+  <script src="./js/systems/blessings.js"></script>
+  <script src="./js/systems/level.js"></script>
+  <script src="./js/core/game.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>

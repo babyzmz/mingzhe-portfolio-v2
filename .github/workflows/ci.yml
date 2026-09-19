@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies (locked)
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Node unit tests
+        run: npm test
+
+      - name: Bundle tests
+        run: node --test tests/bundle.test.mjs
+
+      - name: Vite production build
+        run: npm run build
+
+      - name: Offline single-file build
+        run: npm run build:offline
+
+      - name: Privacy gate on publishable artifacts
+        run: npm run privacy-check
+
+      - name: Confirm no private handoff data is staged
+        shell: pwsh
+        run: |
+          if (Test-Path '.handoff-private') {
+            throw '.handoff-private must never be committed or published'
+          }

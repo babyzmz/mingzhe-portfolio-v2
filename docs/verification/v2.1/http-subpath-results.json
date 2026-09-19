@@ -1,0 +1,44 @@
+[
+  {
+    "path": "",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "pass": true
+  },
+  {
+    "path": "styles/cases.css",
+    "status": 200,
+    "content_type": "text/css; charset=utf-8",
+    "pass": true
+  },
+  {
+    "path": "app/case-dialog.js",
+    "status": 200,
+    "content_type": "text/javascript; charset=utf-8",
+    "pass": true
+  },
+  {
+    "path": "app/case-content.js",
+    "status": 200,
+    "content_type": "text/javascript; charset=utf-8",
+    "pass": true
+  },
+  {
+    "path": "app/case-ai-content.js",
+    "status": 200,
+    "content_type": "text/javascript; charset=utf-8",
+    "pass": true
+  },
+  {
+    "path": "assets/favicon.svg",
+    "status": 200,
+    "content_type": "image/svg+xml",
+    "pass": true
+  },
+  {
+    "path": "documents/Mingzhe_Zhang_AI_Developer_Resume.pdf",
+    "status": 200,
+    "content_type": "application/pdf",
+    "pass": true
+  }
+]

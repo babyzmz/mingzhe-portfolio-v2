@@ -1,0 +1,115 @@
+[
+  {
+    "test": "complete readable case: zh/fairy",
+    "pass": true,
+    "detail": {
+      "characters": 1629
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/fairy",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/core",
+    "pass": true,
+    "detail": {
+      "characters": 1599
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/core",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/claw",
+    "pass": true,
+    "detail": {
+      "characters": 1395
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/claw",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/ax",
+    "pass": true,
+    "detail": {
+      "characters": 1476
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/ax",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/dreambound",
+    "pass": true,
+    "detail": {
+      "characters": 1319
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/dreambound",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "Dreambound records the missing script, not a playable promise",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/webchange",
+    "pass": true,
+    "detail": {
+      "characters": 1103
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/webchange",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/goodnight",
+    "pass": true,
+    "detail": {
+      "characters": 1032
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/goodnight",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/tarot",
+    "pass": true,
+    "detail": {
+      "characters": 1083
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/tarot",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: zh/converter",
+    "pass": true,
+    "detail": {
+      "characters": 1063
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: zh/converter",
+    "pass": true,
+    "detail": null
+  }
+]

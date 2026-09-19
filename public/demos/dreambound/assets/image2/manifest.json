@@ -1,0 +1,337 @@
+{
+  "source": "assets/image2/memory_tide_asset_sheet_v1.png",
+  "generator": "built-in image generation; CLI gpt-image-2 unavailable because OPENAI_API_KEY is not set",
+  "setting_basis": "Dreambound Realm Chapter I - Memory Tide; Knight of the Realm, Kotori memory fragment, Echo Knight, past shadows, Dream Blessings",
+  "assets": [
+    {
+      "id": "knight_front",
+      "type": "character",
+      "image": "assets/image2/crops/knight_front.png",
+      "sourceBox": [
+        0,
+        25,
+        284,
+        481
+      ],
+      "size": [
+        284,
+        456
+      ]
+    },
+    {
+      "id": "knight_back",
+      "type": "character",
+      "image": "assets/image2/crops/knight_back.png",
+      "sourceBox": [
+        291,
+        40,
+        506,
+        465
+      ],
+      "size": [
+        215,
+        425
+      ]
+    },
+    {
+      "id": "kotori_front",
+      "type": "character",
+      "image": "assets/image2/crops/kotori_front.png",
+      "sourceBox": [
+        506,
+        40,
+        852,
+        517
+      ],
+      "size": [
+        346,
+        477
+      ]
+    },
+    {
+      "id": "kotori_back",
+      "type": "character",
+      "image": "assets/image2/crops/kotori_back.png",
+      "sourceBox": [
+        768,
+        51,
+        975,
+        465
+      ],
+      "size": [
+        207,
+        414
+      ]
+    },
+    {
+      "id": "echo_knight_front",
+      "type": "boss",
+      "image": "assets/image2/crops/echo_knight_front.png",
+      "sourceBox": [
+        952,
+        20,
+        1282,
+        512
+      ],
+      "size": [
+        330,
+        492
+      ]
+    },
+    {
+      "id": "echo_knight_back",
+      "type": "boss",
+      "image": "assets/image2/crops/echo_knight_back.png",
+      "sourceBox": [
+        1259,
+        35,
+        1512,
+        496
+      ],
+      "size": [
+        253,
+        461
+      ]
+    },
+    {
+      "id": "past_shadow_chaser_a",
+      "type": "enemy",
+      "image": "assets/image2/crops/past_shadow_chaser_a.png",
+      "sourceBox": [
+        0,
+        486,
+        322,
+        762
+      ],
+      "size": [
+        322,
+        276
+      ]
+    },
+    {
+      "id": "past_shadow_chaser_b",
+      "type": "enemy",
+      "image": "assets/image2/crops/past_shadow_chaser_b.png",
+      "sourceBox": [
+        276,
+        491,
+        529,
+        773
+      ],
+      "size": [
+        253,
+        282
+      ]
+    },
+    {
+      "id": "memory_marksman",
+      "type": "enemy",
+      "image": "assets/image2/crops/memory_marksman.png",
+      "sourceBox": [
+        522,
+        486,
+        821,
+        762
+      ],
+      "size": [
+        299,
+        276
+      ]
+    },
+    {
+      "id": "mushroom_elder",
+      "type": "npc",
+      "image": "assets/image2/crops/mushroom_elder.png",
+      "sourceBox": [
+        791,
+        481,
+        1006,
+        762
+      ],
+      "size": [
+        215,
+        281
+      ]
+    },
+    {
+      "id": "memory_wisp",
+      "type": "npc",
+      "image": "assets/image2/crops/memory_wisp.png",
+      "sourceBox": [
+        983,
+        496,
+        1182,
+        768
+      ],
+      "size": [
+        199,
+        272
+      ]
+    },
+    {
+      "id": "memory_tide_gate_scene",
+      "type": "scene",
+      "image": "assets/image2/crops/memory_tide_gate_scene.png",
+      "sourceBox": [
+        1167,
+        465,
+        1536,
+        778
+      ],
+      "size": [
+        369,
+        313
+      ]
+    },
+    {
+      "id": "lucid_sword",
+      "type": "weapon",
+      "image": "assets/image2/crops/lucid_sword.png",
+      "sourceBox": [
+        15,
+        773,
+        122,
+        983
+      ],
+      "size": [
+        107,
+        210
+      ]
+    },
+    {
+      "id": "dream_step_blade",
+      "type": "weapon",
+      "image": "assets/image2/crops/dream_step_blade.png",
+      "sourceBox": [
+        107,
+        773,
+        238,
+        988
+      ],
+      "size": [
+        131,
+        215
+      ]
+    },
+    {
+      "id": "mirror_shard_blade",
+      "type": "weapon",
+      "image": "assets/image2/crops/mirror_shard_blade.png",
+      "sourceBox": [
+        230,
+        773,
+        399,
+        988
+      ],
+      "size": [
+        169,
+        215
+      ]
+    },
+    {
+      "id": "knight_shield",
+      "type": "weapon",
+      "image": "assets/image2/crops/knight_shield.png",
+      "sourceBox": [
+        399,
+        768,
+        560,
+        957
+      ],
+      "size": [
+        161,
+        189
+      ]
+    },
+    {
+      "id": "echo_shield",
+      "type": "weapon",
+      "image": "assets/image2/crops/echo_shield.png",
+      "sourceBox": [
+        552,
+        768,
+        698,
+        957
+      ],
+      "size": [
+        146,
+        189
+      ]
+    },
+    {
+      "id": "dream_step_trail",
+      "type": "vfx",
+      "image": "assets/image2/crops/dream_step_trail.png",
+      "sourceBox": [
+        683,
+        778,
+        1021,
+        988
+      ],
+      "size": [
+        338,
+        210
+      ]
+    },
+    {
+      "id": "kotori_memory_echo",
+      "type": "vfx",
+      "image": "assets/image2/crops/kotori_memory_echo.png",
+      "sourceBox": [
+        936,
+        752,
+        1175,
+        977
+      ],
+      "size": [
+        239,
+        225
+      ]
+    },
+    {
+      "id": "blessing_orb",
+      "type": "vfx",
+      "image": "assets/image2/crops/blessing_orb.png",
+      "sourceBox": [
+        1159,
+        762,
+        1320,
+        983
+      ],
+      "size": [
+        161,
+        221
+      ]
+    },
+    {
+      "id": "mirror_shards",
+      "type": "vfx",
+      "image": "assets/image2/crops/mirror_shards.png",
+      "sourceBox": [
+        1305,
+        752,
+        1428,
+        977
+      ],
+      "size": [
+        123,
+        225
+      ]
+    },
+    {
+      "id": "door_open_sigil",
+      "type": "vfx",
+      "image": "assets/image2/crops/door_open_sigil.png",
+      "sourceBox": [
+        1405,
+        737,
+        1536,
+        1003
+      ],
+      "size": [
+        131,
+        266
+      ]
+    }
+  ]
+}

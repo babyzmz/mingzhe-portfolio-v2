@@ -1,0 +1,141 @@
+[
+  {
+    "test": "story entry starts a real running opening animation",
+    "pass": true,
+    "detail": {
+      "phase": "opening",
+      "active": 1,
+      "matrix": "matrix(0.930926, 0, 0, 0.930926, -74.762, 35.3715)"
+    }
+  },
+  {
+    "test": "opening changes actual rendered transform over time",
+    "pass": true,
+    "detail": {
+      "first": "matrix(0.930926, 0, 0, 0.930926, -74.762, 35.3715)",
+      "later": "matrix(0.980134, 0, 0, 0.980134, -21.5016, 10.1728)"
+    }
+  },
+  {
+    "test": "five reading chapters are present",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "Fairy explains documents, tools and project purpose",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "page scroll is locked while reading",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "workflow navigation moves the dialog, not the background",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "reading progress responds to internal scrolling",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "workflow TOC item identifies current section",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "flow is labelled illustrative",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "workflow has a concrete input and four stages",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "six explanatory feature cards rather than only keywords",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "visible feature cards finish their section reveals",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "glossary expansion has a real running height animation",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "glossary visibly expands instead of instantly appearing",
+    "pass": true,
+    "detail": {
+      "initial": 0,
+      "later": 244.8125
+    }
+  },
+  {
+    "test": "glossary supplies plain-language definitions",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "glossary closes with correct accessibility state",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "close waits for its exit animation before native close",
+    "pass": true,
+    "detail": {
+      "open": true,
+      "phase": "closing",
+      "active": true
+    }
+  },
+  {
+    "test": "closing restores page scroll and the original CTA focus",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "body scroll lock is cleaned up",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "archive artwork uses the same opening animation",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "Core explains refresh recovery and is not called Fairy backend",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "next-project navigation has an animated transition",
+    "pass": true,
+    "detail": "switching"
+  },
+  {
+    "test": "next-project content and reading position reset",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "locale switch also updates the open case",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "focus returns after locale rebuilt the underlying site",
+    "pass": true,
+    "detail": null
+  }
+]

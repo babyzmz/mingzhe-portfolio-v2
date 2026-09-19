@@ -1,0 +1,14 @@
+[
+  {
+    "test": "background rendering pauses while the reader is open",
+    "pass": true
+  },
+  {
+    "test": "keyboard navigation stays inside the native modal",
+    "pass": true
+  },
+  {
+    "test": "a superseded glossary callback cannot hide the active transition",
+    "pass": false
+  }
+]

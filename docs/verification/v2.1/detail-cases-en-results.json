@@ -1,0 +1,110 @@
+[
+  {
+    "test": "complete readable case: en/fairy",
+    "pass": true,
+    "detail": {
+      "characters": 4437
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/fairy",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/core",
+    "pass": true,
+    "detail": {
+      "characters": 4219
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/core",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/claw",
+    "pass": true,
+    "detail": {
+      "characters": 3617
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/claw",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/ax",
+    "pass": true,
+    "detail": {
+      "characters": 4035
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/ax",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/dreambound",
+    "pass": true,
+    "detail": {
+      "characters": 3115
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/dreambound",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/webchange",
+    "pass": true,
+    "detail": {
+      "characters": 2866
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/webchange",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/goodnight",
+    "pass": true,
+    "detail": {
+      "characters": 2686
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/goodnight",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/tarot",
+    "pass": true,
+    "detail": {
+      "characters": 2823
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/tarot",
+    "pass": true,
+    "detail": null
+  },
+  {
+    "test": "complete readable case: en/converter",
+    "pass": true,
+    "detail": {
+      "characters": 2818
+    }
+  },
+  {
+    "test": "case has source and limitation disclosure: en/converter",
+    "pass": true,
+    "detail": null
+  }
+]
