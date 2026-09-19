@@ -110,12 +110,16 @@ with sync_playwright() as pw:
      check('private project shows no external links: '+ident,link_state['buttons']==0 and link_state['quiet']==0 and link_state['privateNotes']==1,link_state)
     elif ident=='fairy':
      check('fairy shows one source link, no demo/download: '+lang,link_state['buttons']==1 and link_state['quiet']==0 and (('项目源码' if lang=='zh' else 'Source code') in link_state['sourceText']),link_state)
+    elif ident=='dreambound':
+     demo_label='在线演示' if lang=='zh' else 'Live demo'
+     rec_label='原项目记录' if lang=='zh' else 'Project record'
+     check('dreambound shows one hosted demo plus the record: '+lang+'/'+ident,link_state['buttons']==1 and demo_label in link_state['sourceText'] and link_state['quiet']>=1 and rec_label in link_state['recordText'],link_state)
     else:
      want='原项目记录' if lang=='zh' else 'Project record'
      check('archive shows record only, never source/demo: '+lang+'/'+ident,link_state['buttons']==0 and link_state['quiet']>=1 and want in link_state['recordText'],link_state)
     if ident=='ax' and lang=='zh':page.screenshot(path=str(OUT/'07-ax-top.png'))
     if ident=='dreambound' and lang=='zh':
-     check('Dreambound records the missing script, not a playable promise','404' in copy and 'Memory Tide' in copy)
+     check('Dreambound copy keeps the 404 record and states the hosted playable demo','404' in copy and '记忆潮汐' in copy and '可玩演示' in copy)
      page.screenshot(path=str(OUT/'08-dreambound-top.png'))
     dismiss(page)
  elif PART=="edge":

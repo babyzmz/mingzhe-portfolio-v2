@@ -31,8 +31,8 @@ export const projects: Project[] = [
    "summary": "A desktop AI assistant for project conversations, document retrieval, tools and file previews, with pet and voice interaction.",
    "role": "Self-directed, AI-assisted project development: requirements, provider integration, animated desktop interactions, debugging and focused validation.",
    "status": "In development · companion features in Beta",
-   "evidence": "Current supplied CV and the public Fairy V3 repository describe the desktop shell, Core, capability adapters and documented release scope.",
-   "limits": "Native desktop runtime and release gates were not executed for this portfolio. Real-time Beta is not presented as a production release. This website shows a visual interpretation, not a running desktop app.",
+   "evidence": "Current supplied CV and the public Fairy V3 repository describe the desktop shell, Core, capability adapters and documented release scope. Real screenshots and a blurred screen recording captured on 2026-09-19 show the permission settings, Skills/MCP catalogue, model configuration and browser-state pages of the running app.",
+   "limits": "This portfolio does not run a native release build or present Beta as a production release; the website shows real captured evidence plus a visual interpretation, not an embedded desktop app. Conversation content was excluded or blurred before capture, and no private keys or local data are published.",
    "features": [
     "Local-first Windows desktop workspace with ordinary and project conversations.",
     "Model/provider integration, MCP tools and reusable Skills.",
@@ -46,8 +46,8 @@ export const projects: Project[] = [
    "summary": "围绕项目聊天、检索文档、使用工具并预览生成文件的桌面 AI 助手，同时探索桌宠与语音交互。",
    "role": "自主、AI 辅助的项目开发：需求拆解、模型接入、桌宠动画和窗口交互、问题排查与针对性验证。",
    "status": "持续开发 · 实时陪伴处于 Beta",
-   "evidence": "依据已提供的新简历和 Fairy V3 公开仓库；仓库描述了桌面壳、Core、能力适配和发布范围。",
-   "limits": "本次作品集制作未执行原生桌面运行与发布验收。实时 Beta 不等同于正式生产版本。本站展示视觉演绎，不是在网页里运行桌面程序。",
+   "evidence": "依据已提供的新简历和 Fairy V3 公开仓库；仓库描述了桌面壳、Core、能力适配和发布范围。2026-09-19 实拍的截图与打码录屏展示了运行中应用的权限设置、Skills/MCP 目录、模型配置与浏览器状态页面。",
+   "limits": "本次作品集未运行原生发布构建，也不把 Beta 当作正式生产版本；网站展示真实实拍证据与视觉演绎，而不是在网页里运行桌面程序。采集前已排除或模糊对话内容，不发布任何私钥或本地数据。",
    "features": [
     "本地优先的 Windows 工作空间，区分普通聊天与项目会话。",
     "模型供应商接入、MCP 工具与可复用 Skills。",
@@ -199,31 +199,31 @@ export const projects: Project[] = [
   "url": "https://github.com/babyzmz/mingzhe-portfolio/tree/main/demos/dreambound",
   "en": {
    "category": "BROWSER GAME",
-   "summary": "A dream-themed Canvas game project. The source defines chapter, health/skill, choice and end screens; runtime logic remains unverified.",
-   "role": "Earlier portfolio project; the original configuration lists a static canvas game and bundled browser demo. No more specific contribution claim is added here.",
-   "status": "Earlier project · interface source inspected · runtime unverified",
-   "evidence": "The original project configuration and inspected demos/dreambound/index.html define Canvas, the Memory Tide start screen, HP/Skill, Echo Knight status, Dream Blessing choices and end screens.",
-   "limits": "The entry references game-logic scripts absent from the inspected public directory; the js/core/game.js request returned 404. Interface markup does not prove running gameplay. This edition links the original record without promising a playable build.",
+   "summary": "A dream-themed Canvas/WebGL2 action roguelite. The recovered build runs in the browser: chapter title, combat, blessings and run-end loop verified end to end.",
+   "role": "Earlier portfolio project; the playable build is the original Canvas/WebGL2 edition, recovered from the local working copy and hosted as a static demo on this site.",
+   "status": "Earlier project · playable demo hosted and verified on 2026-09-19",
+   "evidence": "The game boots in a real browser with WebGL (ANGLE/D3D11): Chapter I Memory Tide title, HUD with room/build/HP, real-time combat with enemies and projectiles, blessing choices and the run-end/restart screen were exercised through a full play loop with zero console or HTTP errors.",
+   "limits": "The older public GitHub copy is missing js/core/game.js (its request returned 404), so the demo on this site was recovered from the local original. The separate Unity 6 remake is not built or verified here. Character art rights should be confirmed before wider redistribution.",
    "features": [
-    "Game Canvas and chapter entry in the original HTML.",
-    "Defined health, skill, room and boss-status interfaces.",
-    "Choice, end and restart screen structures; script execution remains unverified."
+    "Playable Canvas/WebGL2 build hosted on this site, no server required.",
+    "Health, skill cooldown, rooms and enemies verified in a real run.",
+    "Blessing choices, run-end screen and restart loop exercised end to end."
    ],
-   "challenge": "This archive records earlier interactive work without implying that its runtime was re-tested in the new site."
+   "challenge": "Host only the build that was actually run to completion, and keep the older incomplete public copy labelled as the original record."
   },
   "zh": {
    "category": "浏览器游戏",
-   "summary": "梦境主题的 Canvas 游戏项目。原页面可查到章节入口、生命／技能状态、梦境选择及结束界面；运行逻辑未核验。",
-   "role": "旧作品集项目；原始配置记录了静态 Canvas 游戏及随站打包的浏览器演示，不额外扩大个人贡献描述。",
-   "status": "历史项目 · 界面结构可查 · 运行未核验",
-   "evidence": "原站项目配置及本次读取的 demos/dreambound/index.html：页面定义了 Canvas、Memory Tide 开始画面、HP／Skill、Echo Knight 状态、Dream Blessing 选择和结束界面。",
-   "limits": "入口引用了游戏逻辑脚本，但本次读取的公开目录未提供这些文件，对 js/core/game.js 的请求返回 404。网页结构不等于已运行的游戏；本版本仅链接原始记录，不提供可玩承诺。",
+   "summary": "梦境主题的 Canvas/WebGL2 动作肉鸽游戏。恢复后的构建可在浏览器直接运行：章节标题、战斗、祝福与结算循环已端到端验证。",
+   "role": "旧作品集项目；可玩版本为 Canvas/WebGL2 原版，从本地工作副本找回，作为静态演示托管在本站。",
+   "status": "历史项目 · 可玩演示已托管并于 2026-09-19 验证",
+   "evidence": "游戏在真实浏览器以 WebGL（ANGLE/D3D11）启动：第一章「记忆潮汐」标题、房间/构筑/生命值 HUD、带敌人与弹幕的实时战斗、祝福选择与结算重开，已完整跑通，无控制台或 HTTP 错误。",
+   "limits": "较早的公开 GitHub 副本缺少 js/core/game.js（请求返回 404），本站演示由本地原版恢复；独立的 Unity 6 重制版未在本次构建或验证；角色美术的对外授权需另行确认。",
    "features": [
-    "原始 HTML 中的游戏 Canvas 与章节入口。",
-    "生命、技能、房间与 Boss 状态界面结构。",
-    "选择、结束与重新开始的页面结构；脚本运行未核验。"
+    "可玩 Canvas/WebGL2 构建托管在本站，无需服务器。",
+    "真实运行中验证了生命、技能冷却、房间与敌人。",
+    "祝福选择、结算画面与重新开始循环已端到端跑通。"
    ],
-   "challenge": "保留过去的交互作品，同时不暗示新版网站已重新测试原游戏运行环境。"
+   "challenge": "只托管真正完整跑通过的构建，并把较早的不完整公开副本继续标注为原始记录。"
   }
  },
  {
@@ -238,29 +238,31 @@ export const projects: Project[] = [
   "url": "https://github.com/babyzmz/mingzhe-portfolio/blob/main/script.js",
   "en": {
    "category": "MONITORING INTERFACE",
-   "summary": "An Electron interface project for website-change monitoring. Its purpose and interface form are documented, not a verified monitoring backend.",
-   "role": "Earlier project record only. The supplied source describes an Electron renderer; detailed personal contribution and backend delivery are not established.",
-   "status": "Archived project · deployment not verified",
-   "evidence": "Original project configuration: Web Change Desktop UI; Electron renderer; demo URL pending.",
-   "limits": "No deployed renderer or working monitoring service was verified. This card links to the original project record, not a product demo.",
+   "summary": "A website-change monitoring system with a Python semantic-diff engine and an Electron desktop UI. The CLI pipeline and desktop renderer were run and captured locally.",
+   "role": "Earlier full-stack project: monitor configuration, semantic change detection, alert records and the desktop control-panel interface.",
+   "status": "Archived project · CLI and UI renderer verified locally on 2026-09-19",
+   "evidence": "The Python monitor passed its test suite (8/8), fetched a real external page, and a two-pass run against a local fixture detected a price drop (¥329 to ¥299, confidence 0.93) and wrote the alert record. The desktop UI renderer (dashboard, monitors, alerts, history, settings and add-monitor dialog) was built and captured in a real browser.",
+   "limits": "Gallery stills show the renderer process only, not the packaged Electron shell: that build starts multi-GB local-model downloads on launch with no opt-out, so it was not started. Two upstream packaging issues were recorded (absolute base path breaks the file:// build; unconditional AI runtime initialisation) and left unchanged. No hosted service is linked.",
    "features": [
-    "Desktop UI for a website-change monitoring concept.",
-    "Electron renderer noted in the original project record."
+    "Semantic content diff with confidence scoring and alert log.",
+    "Desktop control panel for monitors, alerts, history and settings.",
+    "CLI pipeline verified end to end with local fixtures."
    ],
-   "challenge": "Preserve the intended use and technology without treating a renderer as an operational monitoring service."
+   "challenge": "Keep UI evidence labelled as renderer-only and prove monitoring behaviour through CLI runs instead of implying a packaged, hosted product."
   },
   "zh": {
    "category": "网页变化监测界面",
-   "summary": "围绕网页变化监测的 Electron 桌面界面项目；现有记录可确认用途和界面形态，未核验后台监测服务。",
-   "role": "仅沿用旧项目记录。来源描述了 Electron renderer，未明确细化的个人贡献或后端交付情况。",
-   "status": "历史项目 · 部署未验证",
-   "evidence": "原始配置写明 Web Change Desktop UI、Electron renderer，以及待补充的演示地址。",
-   "limits": "未验证已部署的 renderer 或实际监测服务。入口指向旧项目记录，不是产品演示。",
+   "summary": "带 Python 语义差异引擎与 Electron 桌面界面的网页变化监测系统；命令行流水线与桌面渲染层已在本机运行并截图。",
+   "role": "早期全栈项目：监控配置、语义变化检测、告警记录与桌面控制台界面。",
+   "status": "历史项目 · CLI 与 UI 渲染层已于 2026-09-19 在本机验证",
+   "evidence": "Python 监测器测试 8/8 通过，成功抓取真实外部页面；对本地夹具的两轮运行检出降价（¥329→¥299，置信度 0.93）并写入告警记录。桌面 UI 渲染层（仪表盘、监控、告警、历史、设置与新增监控对话框）已在真实浏览器中构建并截图。",
+   "limits": "画廊截图仅覆盖渲染进程，不含打包后的 Electron 整壳：该构建开机即无开关下载数 GB 本地模型，因此未启动。两处上游打包问题已记录（绝对 base 路径导致 file:// 白屏、AI 运行时无条件初始化），未做修改。本站不链接托管服务。",
    "features": [
-    "面向网页变化监测的桌面 UI 概念。",
-    "原始记录中的 Electron renderer。"
+    "带置信度评分与告警日志的语义内容差异检测。",
+    "管理监控、告警、历史与设置的桌面控制台。",
+    "命令行流水线已用本地夹具端到端验证。"
    ],
-   "challenge": "保留用途和技术信息，但不把一个界面项目描述成已运行的监测服务。"
+   "challenge": "UI 证据明确标注为渲染层，监测能力用命令行实测证明，而不是暗示已有打包并托管的产品。"
   }
  },
  {
@@ -275,29 +277,31 @@ export const projects: Project[] = [
   "url": "https://github.com/babyzmz/mingzhe-portfolio/blob/main/script.js",
   "en": {
    "category": "COMMERCE EXPERIMENT",
-   "summary": "A Next.js store exploration with recorded server/database requirements, without a verified live storefront or transaction flow.",
-   "role": "Earlier portfolio project. The source records a Next.js store requiring a server runtime and database, without establishing sales or commercial adoption.",
-   "status": "Archived project · server deployment required",
-   "evidence": "Original portfolio project configuration describes Goodnight Store as a Next.js application, with its demo URL empty.",
-   "limits": "No store backend, checkout flow, live customers or production deployment were verified for this portfolio.",
+   "summary": "A Next.js anime-goods storefront. The UI-only build (browsing, product grid, long page) was run and captured locally; the full backend edition exists separately and was not started.",
+   "role": "Earlier commerce project: storefront layout, product presentation and responsive page structure.",
+   "status": "Archived project · UI-only build verified locally on 2026-09-19; backend edition not run",
+   "evidence": "The UI-only Next.js build served a 3,287 px storefront in a real browser with the hero, featured products and product grid, zero console errors and zero failed requests. Product imagery carries supplier SAMPLE watermarks.",
+   "limits": "This edition has no backend, account, payment or order pipeline, and it is not linked as a live shop. The separate full build (Prisma, auth, uploads) contains real configuration and a database dump, so it was inventoried but neither read nor run. Product art depicts licensed-style fan goods and is shown as watermarked samples.",
    "features": [
-    "Next.js commerce application listed in the original portfolio.",
-    "A server runtime and database are required by that project description."
+    "Storefront hero, featured products and full product grid in Next.js.",
+    "Responsive long-page layout verified in a real browser.",
+    "Checkout and order management remain out of scope for this UI build."
    ],
-   "challenge": "A store interface and a live commerce operation are different claims; this entry makes only the former project-level claim."
+   "challenge": "Present the storefront craft honestly: a browsable UI prototype is not an operating commerce business."
   },
   "zh": {
    "category": "电商体验探索",
-   "summary": "Next.js 商店应用探索，原记录包含服务端和数据库部署需求；当前没有已验证的在线商店或交易流程。",
-   "role": "旧作品集项目。来源记录了需要服务端和数据库的 Next.js 商店，没有销售或商业使用规模的证据。",
-   "status": "历史项目 · 需要服务端部署",
-   "evidence": "原始项目配置将 Goodnight Store 记为 Next.js 应用，演示地址为空。",
-   "limits": "本次作品集未验证商店后端、结算流程、真实客户或生产部署。",
+   "summary": "Next.js 二次元商品店铺。纯 UI 版本（浏览、商品网格、长页面）已在本机运行并截图；完整后端版本单独存在，本次未启动。",
+   "role": "早期电商项目：店铺布局、商品呈现与响应式页面结构。",
+   "status": "历史项目 · UI 版本已于 2026-09-19 在本机验证；后端版本未运行",
+   "evidence": "纯 UI 的 Next.js 版本在真实浏览器中呈现 3287px 店铺长页，含首页横幅、热门商品与商品网格，控制台零错误、请求零失败；商品图带有供应商 SAMPLE 水印。",
+   "limits": "该版本没有后端、账号、支付或订单链路，不作为在线商店链接。独立的完整版本（Prisma、鉴权、上传）含真实配置与数据库转储，仅做目录盘点，未读取也未运行。商品图为带水印的授权风格同人样图。",
    "features": [
-    "原作品集中记录的 Next.js 电商应用。",
-    "项目描述需要服务端运行环境与数据库。"
+    "Next.js 店铺横幅、热门商品与完整商品网格。",
+    "响应式长页面布局已在真实浏览器验证。",
+    "结账与订单管理不在此 UI 版本范围内。"
    ],
-   "challenge": "商店界面与真实运营的电商平台不是同一件事；这里只保留来源支持的项目层面描述。"
+   "challenge": "如实呈现店铺界面成果：可浏览的 UI 原型不等于实际运营的电商业务。"
   }
  },
  {
@@ -312,29 +316,31 @@ export const projects: Project[] = [
   "url": "https://github.com/babyzmz/mingzhe-portfolio/blob/main/script.js",
   "en": {
    "category": "GENERATIVE EXPERIENCE",
-   "summary": "A tarot-themed AI analysis and report-generation exploration in a server-backed Next.js app; the live service and report format are unverified.",
-   "role": "Earlier portfolio project record. No additional model, accuracy or prediction claims are introduced.",
-   "status": "Archived project · server deployment required",
-   "evidence": "Original project configuration: AI Tarot Report Generator, Next.js, runtime needed, no public demo URL.",
-   "limits": "No working generation endpoint was verified. This is a creative experiment, not a claim of predictive validity.",
+   "summary": "A tarot-themed AI report generator in Next.js. The full local flow — form, shuffle, three-card draw and structured A–F report — was verified with the documented mock switch.",
+   "role": "Earlier project: session form, card-draw interaction, report API and structured report layout.",
+   "status": "Archived project · local mock flow verified on 2026-09-19; hosted service not deployed",
+   "evidence": "Running locally without keys or a database (in-memory store, mock polishing switch), the report API returned 201 and the browser flow produced the complete report page; the UI explicitly labels mock output and repeats entertainment and non-professional-advice disclaimers.",
+   "limits": "No paid model was called and no persistent hosted service is linked: durable reports need PostgreSQL and a configured provider. Two upstream findings were recorded (missing favicon, a duplicate React key for repeated cards) and left unchanged. The product is entertainment, not predictive or professional advice.",
    "features": [
-    "Tarot-analysis and report-generation concept.",
-    "Next.js application requiring server-side capabilities."
+    "Session form with question type, spread and draw method.",
+    "Animated shuffle/draw with bilingual card names and meanings.",
+    "Structured A–F report API verified in a local mock environment."
    ],
-   "challenge": "Present the generative interface experiment without suggesting validated predictions or an available hosted endpoint."
+   "challenge": "Show the complete experience while labelling mock output, so a local demo never masquerades as a hosted AI service."
   },
   "zh": {
    "category": "生成式体验",
-   "summary": "塔罗主题的 AI 分析与报告生成应用探索，采用需要服务端的 Next.js 形态；在线生成与报告格式未核验。",
-   "role": "沿用旧作品集的项目记录，不追加模型、准确率或预测能力方面的宣传。",
-   "status": "历史项目 · 需要服务端部署",
-   "evidence": "原配置：AI Tarot Report Generator、Next.js、需要运行环境、没有公开演示地址。",
-   "limits": "未验证可用的生成接口。这是创意体验探索，不代表具有经过验证的预测能力。",
+   "summary": "Next.js 塔罗主题 AI 报告生成器。表单、洗牌、三张抽牌到结构化 A–F 报告的完整本地流程，已用明示的 mock 开关验证。",
+   "role": "早期项目：会话表单、抽牌交互、报告接口与结构化报告版式。",
+   "status": "历史项目 · 本地 mock 流程已于 2026-09-19 验证；未部署托管服务",
+   "evidence": "在无密钥、无数据库（内存存储、mock 润色开关）的本地运行中，报告接口返回 201，浏览器流程产出完整报告页；界面明确标注 mock 输出，并重申娱乐与非专业建议免责声明。",
+   "limits": "未调用付费模型，也不链接持久托管服务：报告持久化需要 PostgreSQL 与已配置的供应商。已记录两处上游问题（favicon 缺失、重复牌产生重复 React key），未做修改。产品定位为娱乐，不构成预测或专业建议。",
    "features": [
-    "塔罗分析与报告生成的体验概念。",
-    "需要服务端能力的 Next.js 应用。"
+    "含问题类型、牌阵与抽牌方式的会话表单。",
+    "洗牌/抽牌动画与中英牌名、牌义。",
+    "结构化 A–F 报告接口已在本地 mock 环境验证。"
    ],
-   "challenge": "展示生成式界面探索，而不暗示预测准确性或现成可用的托管接口。"
+   "challenge": "展示完整体验的同时标注 mock 输出，不让本地演示冒充托管 AI 服务。"
   }
  },
  {
@@ -350,29 +356,31 @@ export const projects: Project[] = [
   "url": "https://github.com/babyzmz/mingzhe-portfolio/blob/main/script.js",
   "en": {
    "category": "DESKTOP UTILITY",
-   "summary": "A native Python / PyQt conversion utility project focused on file input and output. Supported formats and executable behaviour are unverified.",
-   "role": "Earlier portfolio project. The source identifies a PyQt desktop utility but does not enumerate verified supported formats.",
-   "status": "Archived project · release link unavailable",
-   "evidence": "The old portfolio lists Mi Format Converter as a PyQt desktop app with a pending release link.",
-   "limits": "No executable, supported-format matrix or conversion accuracy was tested in this build. A native PyQt app is not embedded as a browser app.",
+   "summary": "A native Python / PyQt media converter. The released Windows executable (2024-11-25) was launched and its four modules captured in an empty workspace.",
+   "role": "Earlier desktop project: image, video, m4s/concatenation and PDF conversion modules with a tabbed PyQt interface.",
+   "status": "Archived project · released exe launched and UI verified on 2026-09-19; conversion jobs not re-run",
+   "evidence": "The 84.9 MB Mi Format Converter.exe started on Windows with no install: image, video, m4s and PDF tabs render their parameter and output controls. The build bundles an FFmpeg.exe binary from the gyan.dev GPL essentials build.",
+   "limits": "Gallery stills use an empty workspace and no conversion job was executed or timed in this round, so format coverage and accuracy are not re-certified. The original public release page is offline, so no download link is offered; a re-release would require confirming the GPL distribution notice for bundled FFmpeg.",
    "features": [
-    "Native Python / PyQt desktop utility.",
-    "Format conversion identified as its purpose in the original project listing."
+    "Tabbed native PyQt interface for image, video, m4s and PDF conversion.",
+    "Bundled FFmpeg engine (gyan.dev GPL essentials build).",
+    "Released executable runs without installation on Windows."
    ],
-   "challenge": "Describe the native utility honestly without manufacturing a browser demo or unsupported compatibility claims."
+   "challenge": "Show the real shipped utility while distinguishing a launched UI from a re-tested conversion matrix, and respect FFmpeg's GPL obligations before any re-release."
   },
   "zh": {
    "category": "桌面实用工具",
-   "summary": "Python / PyQt 原生格式转换工具项目，聚焦文件输入与转换输出；支持格式和可执行程序尚未核验。",
-   "role": "早期作品项目。来源标明了 PyQt 桌面工具，但没有列出经过验证的格式支持范围。",
-   "status": "历史项目 · 暂无发布包链接",
-   "evidence": "旧作品集记录 Mi Format Converter 为 PyQt 桌面应用，发布链接待补充。",
-   "limits": "本次构建未测试可执行程序、格式兼容表或转换准确性。原生 PyQt 程序不会被冒充为浏览器内应用。",
+   "summary": "原生 Python / PyQt 媒体格式转换器。2024-11-25 的 Windows 发布版已启动，四个模块均在空工作区实拍。",
+   "role": "早期桌面项目：图片、视频、m4s/合并与 PDF 转换模块，以及分页签的 PyQt 界面。",
+   "status": "历史项目 · 发布版 exe 已于 2026-09-19 启动并验证界面；本轮未重跑转换任务",
+   "evidence": "84.9 MB 的 Mi格式转换.exe 免安装在 Windows 启动：图片、视频、m4s、PDF 四个页签的参数与输出控件均正常渲染；构建内置来自 gyan.dev GPL essentials 的 FFmpeg.exe。",
+   "limits": "画廊截图为空工作区实拍，本轮未执行或计时任何转换任务，因此不重新背书格式覆盖与准确率。原公开发布页已下线，故不提供下载链接；若重新发布，需先确认内置 FFmpeg 的 GPL 分发声明。",
    "features": [
-    "Python / PyQt 原生桌面工具。",
-    "原始项目列表明确的格式转换用途。"
+    "图片、视频、m4s 与 PDF 转换的原生 PyQt 分页签界面。",
+    "内置 FFmpeg 引擎（gyan.dev GPL essentials 构建）。",
+    "发布版 exe 可在 Windows 免安装运行。"
    ],
-   "challenge": "如实呈现原生工具，不制造网页版演示或未经证实的兼容能力。"
+   "challenge": "展示真实已发布工具，同时区分“界面已启动”与“转换矩阵已复测”，并在重新发布前履行 FFmpeg 的 GPL 义务。"
   }
  }
 ];
@@ -491,7 +499,7 @@ export const text: Record<Locale,Record<string,string>> = {
   "evidenceIntro": "This site separates project descriptions, personal contribution statements and runtime verification. It does not turn every repository claim into a release claim.",
   "evidenceCv": "Identity, education, internship and personal contribution statements come from the supplied original and updated CVs.",
   "evidenceRepo": "Public Fairy documentation and earlier portfolio configuration provide project context. Reviewed private Mojo documentation supports only public-safe summaries; private source is not distributed.",
-  "evidenceScope": "Native Fairy/Mojo services and old server-backed projects were not run to create this site. The new WebGL portfolio is tested separately. Illustrations are labelled, and old project entries retain their limitations.",
+  "evidenceScope": "In a 2026-09-19 verification round, local projects were run or previewed to capture real evidence: the Fairy desktop UI, the Dreambound Canvas/WebGL2 build (also hosted here as a playable demo), the Tarot and Goodnight UIs, the Web Change CLI and renderer, and the released Mi Format Converter executable. Private MojoCore/MojoClaw/MojoAX source stays closed, and server-backed projects are not presented as hosted services. Illustrations are labelled.",
   "evidencePrivacy": "The downloadable CV contains supplied contact information. The website omits the residential street address and does not contain API keys, private repository paths or analytics trackers.",
   "menu": "Open navigation",
   "contactLink": "Email Mingzhe",
@@ -616,7 +624,7 @@ export const text: Record<Locale,Record<string,string>> = {
   "evidenceIntro": "本站区分项目描述、个人贡献陈述和实际运行验证，不把仓库中的每一句描述都转换为正式发布承诺。",
   "evidenceCv": "身份、教育、实习与个人贡献表述，依据已提供的原简历和更新版简历。",
   "evidenceRepo": "Fairy 公开文档和旧作品集配置提供项目背景；已查阅的私有 Mojo 文档只用于适合公开的概括，不分发私有源码。",
-  "evidenceScope": "本次制作未运行 Fairy 原生应用、Mojo 服务或旧站中需要服务端的项目。新 WebGL 作品集独立测试；示意均有标识，旧项目保留其限制。",
+  "evidenceScope": "2026-09-19 的验证轮次中，本地项目经运行或预览以采集真实证据：Fairy 桌面界面、Dreambound Canvas/WebGL2 构建（并在本站托管为可玩演示）、Tarot 与 Goodnight 界面、Web Change 的 CLI 与渲染层，以及已发布的 Mi 格式转换 exe。私有 MojoCore/MojoClaw/MojoAX 源码继续不公开，需要服务端的项目不冒充托管服务，示意图均有标识。",
   "evidencePrivacy": "下载简历包含已提供的联系方式。网页不展示住宅街道地址，不包含 API 密钥、私有仓库路径或分析追踪器。",
   "menu": "打开导航",
   "contactLink": "给 Mingzhe 发邮件",
