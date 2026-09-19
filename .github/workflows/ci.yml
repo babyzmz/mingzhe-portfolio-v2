@@ -31,14 +31,14 @@ jobs:
       - name: Node unit tests
         run: npm test
 
-      - name: Bundle tests
-        run: node --test tests/bundle.test.mjs
-
       - name: Vite production build
         run: npm run build
 
       - name: Offline single-file build
         run: npm run build:offline
+
+      - name: Bundle tests (require dist/, preview/ and the standalone HTML)
+        run: node --test tests/bundle.test.mjs
 
       - name: Privacy gate on publishable artifacts
         run: npm run privacy-check
