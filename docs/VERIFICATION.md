@@ -71,7 +71,7 @@ Environment: Node.js v22.23.2, npm 10.9.8, installed Google Chrome 153 (Playwrig
 | Check | Result |
 |---|---|
 | `npm run typecheck` | PASS, 0 errors |
-| `npm test` (offline compile + node suites) | 40 passed, 0 failed |
+| `npm test` (offline compile + node suites) | 41 passed, 0 failed |
 | `node --test tests/bundle.test.mjs` | 4 passed, 0 failed |
 | `node --test tests/serve-range.test.mjs` | 4 passed, 0 failed (200, 206, suffix range, 416) |
 | `npm run build` (Vite) then `npm run build:offline` | Both PASS; three deliverables regenerated |
@@ -124,4 +124,48 @@ Python browser tests use Playwright with the installed Chrome (`browser_support.
 - No public media: every real capture stays in the git-ignored private handoff area pending per-item approval, cropping and compression.
 - MojoCore/Claw/AX need authorised source paths; the full Goodnight build needs an owner decision plus a secret scan; the Web Change Electron shell needs an opt-out gate for model downloads before capture; the Converter needs a real transcode test and FFmpeg licence text; Tarot needs a deployed database to be more than a local mock session.
 - Safari/Firefox, physical mobile devices, signed installers and installer smoke tests remain unverified.
+
+---
+
+## 2026-09-19 (later) — public repository, GitHub Pages go-live and playable Dreambound demo
+
+With the owner's explicit authorisation ("other required operations are authorised; continue completing the site"), the approved evidence and the recovered Dreambound build were published. MojoCore/Claw/AX remain private/illustrative; other local projects received preview-only integration with no changes to their own code or UI.
+
+**Remote artefacts**
+
+- Public repository: https://github.com/babyzmz/mingzhe-portfolio-v2 (default branch `main`; the old `babyzmz/mingzhe-portfolio` repository is untouched and remains the project record).
+- Live site (GitHub Pages, build type `workflow`, manual `workflow_dispatch` only): https://babyzmz.github.io/mingzhe-portfolio-v2/
+- Live playable demo: https://babyzmz.github.io/mingzhe-portfolio-v2/demos/dreambound/index.html
+- Deployments (all `success`): Actions runs 35420414859 (initial), 35420729042 (demo link enabled), 35421261206 (evidence-synced copy).
+- CI workflow `.github/workflows/ci.yml` runs on push; the Pages workflow never deploys automatically.
+
+**What was published**
+
+- 27 approved real screenshots plus one 1280×826 screen recording (`public/media/`, ~6 MB total). Fairy conversation rails are cropped or blurred; the Fairy walkthrough has its left rail box-blurred for its full duration; no chat content, keys, database dumps, `.env` files or model weights are included. Goodnight uses the UI-only build with SAMPLE-watermarked supplier imagery; Web Change stills are renderer-only; Tarot is explicitly the mock/in-memory mode; Converter stills show an empty workspace.
+- The Dreambound static build (62 files, 8.54 MB), recovered from the local original including the `js/core/game.js` that returns 404 in the older public copy.
+- `scripts/privacy-check.mjs` runs in CI and before deployment; a pre-push scan and the remote contents API confirmed `.handoff-private/` is neither tracked nor served.
+
+**Live acceptance over the public internet (real Chrome 153, no mocks)**
+
+| Check | Result |
+|---|---|
+| Anonymous GET/HEAD of home, media, demo, CV PDF | 200 |
+| `Range: bytes=0-1023` on `walkthrough.mp4` via `curl.exe` | `206 Partial Content`, `Accept-Ranges: bytes`, `Content-Range: bytes 0-1023/211298` |
+| Dreambound full loop on the live URL (WebGL ANGLE/D3D11) | Title → combat → HP 0 → Run Ended; ~15.4k non-dark canvas pixels; zero console errors and zero 4xx |
+| `tests/browser.py` against the live URL | PASS |
+| `tests/details.browser.py cases-zh` and `cases-en` against the live URL | PASS (assertions updated: Dreambound now shows one hosted demo button plus the quiet project-record link; other archive projects remain record-only) |
+| Six-project gallery rendering check against the live URL | All hero images and gallery items decoded; zero console errors / failed responses; Fairy gallery contains 6 items including 1 video |
+| Demo-link wiring check against the live URL | Dreambound case exposes exactly one primary "Live demo / 在线演示" link to the hosted demo plus the record link; Tarot exposes no demo button |
+| `npm run typecheck` / `npm test` / build / `build:offline` / `privacy-check` | 0 errors; 41/41 node tests; all editions rebuilt; privacy gate PASS |
+
+The case copy in `src/content.ts` was updated so descriptions match the verified evidence (Dreambound playable and hosted; Fairy real captures with blurred conversations; Web Change CLI + renderer evidence; Goodnight UI-only; Tarot local mock flow; Converter released exe launched, no transcode re-test). The site's source-notes panel states the same verification boundary.
+
+**Still not done / explicitly not claimed**
+
+- No Converter Release re-published (original release page offline; GPL notice for bundled FFmpeg required first); no end-to-end transcode re-test.
+- No hosted Tarot/Goodnight/Web Change backend (database, payments, packaged Electron shell); no claims of live customers or services.
+- Dreambound Unity 6 remake not built; character-art redistribution rights unconfirmed.
+- MojoCore/Claw/AX source stays private; illustrations remain labelled.
+- Safari/Firefox, physical mobile devices and signed installer smoke tests remain unverified.
+
 
