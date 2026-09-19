@@ -136,8 +136,9 @@ With the owner's explicit authorisation ("other required operations are authoris
 - Public repository: https://github.com/babyzmz/mingzhe-portfolio-v2 (default branch `main`; the old `babyzmz/mingzhe-portfolio` repository is untouched and remains the project record).
 - Live site (GitHub Pages, build type `workflow`, manual `workflow_dispatch` only): https://babyzmz.github.io/mingzhe-portfolio-v2/
 - Live playable demo: https://babyzmz.github.io/mingzhe-portfolio-v2/demos/dreambound/index.html
-- Deployments (all `success`): Actions runs 35420414859 (initial), 35420729042 (demo link enabled), 35421261206 (evidence-synced copy).
-- CI workflow `.github/workflows/ci.yml` runs on push; the Pages workflow never deploys automatically.
+- Deployments (all `success`): Actions runs 35420414859 (initial), 35420729042 (demo link enabled), 35421261206 (evidence-synced copy), 35421982693 (standalone gating fix).
+- CI workflow `.github/workflows/ci.yml` runs on push and is green on `main` (run 35421932940): it builds both editions before the bundle tests (which require their artifacts). The Pages workflow never deploys automatically.
+- The standalone single-file edition is pre-rendered with the media gate (`renderSite(lang, {singleFile:true})`), so its offline HTML contains zero `./media/` references; bundle tests 4/4 and a real-browser smoke of the standalone file pass.
 
 **What was published**
 
