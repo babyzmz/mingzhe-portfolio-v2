@@ -1,0 +1,149 @@
+name: Apply and verify approved resume replacement
+on:
+  push:
+    branches: [chore/resume-refresh-20260923]
+    paths: [.github/workflows/apply-resume.yml, .github/integration/resume.part0, .github/integration/resume.part1, .github/integration/resume.part2]
+permissions:
+  contents: write
+concurrency:
+  group: approved-resume-replacement
+  cancel-in-progress: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      RESUME_SHA256: 78b54fa878d449b75bad5d8020b35a8ce0cba2752567108fc7f0a0257939c761
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Reconstruct exact owner-approved PDF without editing its content
+        shell: python
+        run: |
+          import base64,hashlib,lzma,os,pathlib,zlib
+          assert os.environ['GITHUB_REF']=='refs/heads/chore/resume-refresh-20260923'
+          path=pathlib.Path('public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf')
+          old=path.read_bytes()
+          assert hashlib.sha256(old).hexdigest()=='21ae5157b19158070631a982a4be7ea98faebcbd7d49af2b6c84390593471907'
+          data=b''.join(pathlib.Path('.github/integration/resume.part'+str(i)).read_bytes() for i in range(3))
+          assert hashlib.sha256(data).hexdigest()=='2df23ef7d100a306d9a5dd6cf936a914d13519d4c312c5f0be6e10ec421e7e4c'
+          streams=[[71,4017],[4182,3667],[7960,7222],[15481,342],[16185,11727],[28208,567],[29340,8235],[37867,420]]
+          basis=old+b''.join(zlib.decompress(old[a:a+n]) for a,n in streams)
+          def apply(program,depth=0):
+              assert depth<3
+              pos=0;out=bytearray()
+              def number():
+                  nonlocal pos
+                  value=0;shift=0
+                  while True:
+                      assert pos<len(program) and shift<35
+                      b=program[pos];pos+=1;value|=(b&127)<<shift
+                      if b<128:return value
+                      shift+=7
+              while pos<len(program):
+                  op=program[pos];pos+=1
+                  if op==0:
+                      a=number();n=number();assert a+n<=len(basis);out+=basis[a:a+n]
+                  elif op in (1,2):
+                      n=number();assert pos+n<=len(program);raw=program[pos:pos+n];pos+=n
+                      if op==2:
+                          co=zlib.compressobj(6,zlib.DEFLATED,15,9);raw=co.compress(apply(raw,depth+1))+co.flush()
+                      out+=raw
+                  else:raise ValueError('Unexpected delta opcode')
+                  assert len(out)<1000000
+              return bytes(out)
+          new=apply(lzma.decompress(base64.b64decode(data,validate=True)))
+          assert len(new)==74848 and hashlib.sha256(new).hexdigest()==os.environ['RESUME_SHA256']
+          assert hashlib.sha1(b'blob '+str(len(new)).encode()+b'\0'+new).hexdigest()=='31c1e8ac2259cdbfa16b0a12c9789d3cd28570f2'
+          assert new.startswith(b'%PDF-')
+          path.write_bytes(new)
+          print('Exact approved PDF verified. Project dates and all source content untouched.')
+      - run: npm ci
+      - name: Rebuild downloadable and embedded editions and run checks
+        run: |
+          npm run build:offline
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Verify every embedded PDF and copied public file
+        shell: python
+        run: |
+          import base64,hashlib,json,os,pathlib,re,subprocess
+          expected=os.environ['RESUME_SHA256'];name='documents/Mingzhe_Zhang_AI_Developer_Resume.pdf'
+          for root in ['public','preview','dist']:
+              assert hashlib.sha256(pathlib.Path(root,name).read_bytes()).hexdigest()==expected,root
+          html=pathlib.Path('Mingzhe-Portfolio-Preview.html').read_text()
+          embedded=re.findall(r'data:application/pdf;base64,([A-Za-z0-9+/=]+)',html)
+          assert len(embedded)>=4
+          for data in embedded:assert hashlib.sha256(base64.b64decode(data)).hexdigest()==expected
+          changed=set(subprocess.check_output(['git','diff','--name-only'],text=True).splitlines())
+          assert changed=={'public/'+name,'Mingzhe-Portfolio-Preview.html'},changed
+          out=pathlib.Path('resume-verification');out.mkdir()
+          (out/'asset-checks.json').write_text(json.dumps({'pdf_sha256':expected,'pdf_bytes':74848,'embedded_references':len(embedded),'changed_files':sorted(changed),'project_dates_added':False},indent=2))
+      - name: Install browser for real download checks
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Verify English and Chinese download controls over HTTP
+        shell: python
+        run: |
+          import functools,hashlib,http.server,json,os,pathlib,threading
+          from playwright.sync_api import sync_playwright
+          expected=os.environ['RESUME_SHA256'];out=pathlib.Path('resume-verification');results=[];errors=[]
+          class Handler(http.server.SimpleHTTPRequestHandler):
+              def do_GET(self):
+                  if self.path.startswith('/mingzhe-portfolio-v2/'):self.path=self.path[len('/mingzhe-portfolio-v2'):]
+                  super().do_GET()
+              def log_message(self,*args):pass
+          server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(pathlib.Path('dist').resolve())))
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          try:
+              with sync_playwright() as p:
+                  browser=p.chromium.launch(args=['--no-sandbox','--disable-webgl'])
+                  context=browser.new_context(reduced_motion='reduce',accept_downloads=True,viewport={'width':1440,'height':960})
+                  page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.set_default_timeout(30000)
+                  page.goto(f'http://127.0.0.1:{server.server_port}/mingzhe-portfolio-v2/',wait_until='load')
+                  for lang in ['en','zh']:
+                      if lang=='zh':page.locator('[data-locale]').click()
+                      for section in ['home','about','contact']:
+                          link=page.locator('#'+section+' a[download]');assert link.count()==1
+                          with page.expect_download() as item:link.click()
+                          download=item.value;assert download.failure() is None
+                          assert hashlib.sha256(pathlib.Path(download.path()).read_bytes()).hexdigest()==expected
+                          results.append({'locale':lang,'control':section,'download_sha256':expected})
+                      page.locator('#contact').scroll_into_view_if_needed();page.locator('footer.footer [data-evidence]').click()
+                      with page.expect_download() as item:page.locator('#case-dialog a[download]').click()
+                      assert hashlib.sha256(pathlib.Path(item.value.path()).read_bytes()).hexdigest()==expected
+                      results.append({'locale':lang,'control':'source-notes','download_sha256':expected})
+                      page.locator('#case-dialog [data-close]').click()
+                  assert page.locator('[data-project-card]').count()==9
+                  assert page.locator('[data-contact-stream]').count()==1
+                  assert not errors,errors
+                  browser.close()
+              (out/'browser-downloads.json').write_text(json.dumps({'passed':True,'results':results,'script_errors':errors},indent=2));print('8 actual browser downloads match approved PDF; 9 projects and corrected footer retained.')
+          finally:server.shutdown()
+      - name: Commit only the PDF and rebuilt standalone to isolated branch
+        env:
+          EXPECTED_HEAD: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          branch=chore/resume-refresh-20260923
+          test "$(git ls-remote origin "refs/heads/$branch" | cut -f1)" = "$EXPECTED_HEAD"
+          git add public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf Mingzhe-Portfolio-Preview.html
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs: replace downloadable and embedded CV with approved September resume'
+          git push origin "HEAD:refs/heads/$branch"
+          git rev-parse HEAD > resume-verification/source-revision.txt
+          git ls-tree HEAD public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf Mingzhe-Portfolio-Preview.html > resume-verification/verified-blobs.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verified-resume-update
+          path: resume-verification/
+          retention-days: 7
