@@ -40,6 +40,20 @@ jobs:
           out = pathlib.Path('test-artifacts/local-sync'); out.mkdir(parents=True,exist_ok=True)
           (out/'expected-source-hashes.json').write_text(json.dumps(expected,indent=2))
           print('All 20 reviewed source hashes match.')
+      - name: Isolate first-render preference test without weakening assertions
+        shell: python
+        run: |
+          import pathlib, hashlib, subprocess
+          path=pathlib.Path('tests/local-sync.browser.py')
+          text=path.read_text()
+          text=text.replace('results=[];errors=[];failed=[]','results=[];errors=[];failed=[];diagnostics=[];completed=False')
+          old="  page.close()\n  c=b.new_context(reduced_motion='reduce',viewport={'width':390,'height':900});rp=c.new_page();rp.set_default_timeout(10000)\n  if URL:rp.goto(URL,wait_until='domcontentloaded')"
+          new="  page.close();b.close()\n  # Isolate first-render preference testing from the long-running WebGL/locale scenario.\n  b,reduced_info=launch_browser(p)\n  c=b.new_context(reduced_motion='reduce',viewport={'width':390,'height':900});rp=c.new_page();rp.set_default_timeout(30000)\n  rp.on('pageerror',lambda e:errors.append(str(e)))\n  rp.on('requestfailed',lambda r:failed.append({'url':r.url,'failure':r.failure}))\n  rp.on('domcontentloaded',lambda:diagnostics.append('reduced:domcontentloaded'))\n  rp.on('response',lambda r:diagnostics.append({'status':r.status,'url':r.url}))\n  if URL:rp.goto(URL,wait_until='domcontentloaded',timeout=30000)"
+          assert text.count(old)==1
+          text=text.replace(old,new).replace('  c.close();b.close()',"  check('reduced-motion page has no script or network failures',not errors and not failed)\n  rp.screenshot(path=str(OUT/'contact-initial-reduced.png'))\n  c.close();b.close();completed=True").replace("'request_failures':failed}","'request_failures':failed,'completed':completed,'reduced_diagnostics':diagnostics}")
+          path.write_text(text)
+          assert hashlib.sha256(path.read_bytes()).hexdigest()=='022b2440fd5c1dacfd4cb8be55bfe783207ea9b8d42af1a963661f8beeb71e3a'
+          subprocess.run(['git','add',str(path)],check=True)
       - run: npm ci
       - name: Build, content parity, unit, bundle and privacy gates
         run: |
