@@ -1,0 +1,99 @@
+name: Publish approved 2026-09-23 portfolio update
+# One-off owner-authorised publication. Regular pages.yml stays manual.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-approved-local-sync.yml]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: approved-local-sync-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'babyzmz/mingzhe-portfolio-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: babyzmz/mingzhe-portfolio-v2
+    steps:
+      - name: Confirm this is the explicitly approved main update
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          parent=$(gh api "repos/$GH_REPO/commits/$GITHUB_SHA" --jq '.parents[0].sha')
+          test "$parent" = '0d6e932d8e4891a6b6ec09c98ccf5dcbaec907d2'
+          actual=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+          test "$actual" = "$GITHUB_SHA"
+      - name: Require fresh main source and browser acceptance
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            id=$(gh run list --workflow local-sync-verify.yml --commit "$GITHUB_SHA" --event push --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "${id:-}"
+          gh run watch "$id" --exit-status --interval 5
+          mkdir -p publication-evidence
+          echo "$id" > publication-evidence/verification-run.txt
+      - name: Dispatch the existing Pages workflow for this approved revision
+        run: |
+          set -euo pipefail
+          actual=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+          test "$actual" = "$GITHUB_SHA"
+          gh workflow run pages.yml --ref main -f environment_name=github-pages
+          for attempt in $(seq 1 60); do
+            id=$(gh run list --workflow pages.yml --commit "$GITHUB_SHA" --event workflow_dispatch --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "${id:-}"
+          echo "$id" > publication-evidence/pages-run.txt
+          gh run watch "$id" --exit-status --interval 5
+      - name: Verify the live HTML, exact bundles and retained download/demo
+        shell: python
+        run: |
+          import hashlib, json, os, pathlib, time, urllib.request
+          base='https://babyzmz.github.io/mingzhe-portfolio-v2/'
+          sha=os.environ['GITHUB_SHA']
+          expected={
+            'assets/index-CGtwUoa3.js':'91205925e41319b333a5f3fc0e12fa9297dcd31355e67e203a7cc5e780639dcc',
+            'assets/index-9_JisoPB.css':'340162f575f5fd4a79f547d2393d2a7e3052a0ce68f7502d76cffe4c3df9563d',
+            'assets/index-Bvu9zNsI.js':'3efcc2c9016df2a5a646b223cce885dff7021bf543c1cc5c4ecc815ef2cdc748',
+            'assets/ScrollTrigger-7Zy99s9Q.js':'3193106bd8610c1839a0f1e25ec7e80577a60902982839386709a9836f0af7d6'
+          }
+          def get(path):
+            request=urllib.request.Request(base+path+'?verified='+sha,headers={'Cache-Control':'no-cache','User-Agent':'Portfolio-release-verification'})
+            with urllib.request.urlopen(request,timeout=30) as response:
+              assert response.status==200
+              return response.read()
+          last=None
+          for attempt in range(18):
+            try:
+              html=get('').decode()
+              assert 'index-CGtwUoa3.js' in html and 'index-9_JisoPB.css' in html, 'stale HTML'
+              assets={name:get(name) for name in expected}
+              for name,digest in expected.items():
+                assert hashlib.sha256(assets[name]).hexdigest()==digest, name
+              app=assets['assets/index-CGtwUoa3.js'].decode()
+              assert 'data-word-reveal' in app and 'data-contact-stream' in app
+              assert 'data-text-stream' not in app
+              assert '个人终端的智能助手' in app and 'AI SaaS' in app
+              assert get('documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').startswith(b'%PDF-')
+              assert b'Dreambound Realm' in get('demos/dreambound/index.html')
+              result={'verified':True,'revision':sha,'url':base,'bundle_sha256':expected,'pdf':200,'dreambound':200,'checked_at_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+              pathlib.Path('publication-evidence/live-result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2))
+              print(json.dumps(result,ensure_ascii=False,indent=2))
+              break
+            except Exception as error:
+              last=str(error);print('Waiting for deployed content:',last,flush=True);time.sleep(5)
+          else:raise RuntimeError('Live deployment could not be verified: '+str(last))
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-publication-evidence
+          path: publication-evidence/
+          retention-days: 14

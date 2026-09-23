@@ -1,0 +1,75 @@
+/* Contact heading replaces the old title. There is no extra footer marquee. */
+#contact { scroll-margin-top: 90px; }
+#contact .contact-stream { position: relative; min-width: 0; }
+#contact .contact-stream-heading {
+  margin: 0; font-size: clamp(48px, 8.7vw, 139px);
+  font-weight: 500; line-height: 1; letter-spacing: -.06em;
+}
+#contact .contact-stream-prefix { display: block; color: var(--ink); line-height: 1.08; }
+#contact .contact-stream-viewport {
+  position: relative; display: block; width: 100%; height: 1.9em;
+  overflow: hidden; isolation: isolate; color: #9ddfc4;
+}
+#contact .contact-stream-fallback {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  color: #9ddfc4; white-space: nowrap; line-height: 1.17;
+}
+#contact .contact-stream-track {
+  position: absolute; top: 0; left: 0; display: flex;
+  flex-direction: column; visibility: hidden; width: max-content;
+  will-change: auto;
+}
+#contact .contact-stream-copy { display: flex; flex-direction: column; flex: none; }
+#contact .contact-stream-item {
+  display: block; padding: .085em 0; line-height: 1.17;
+  white-space: nowrap; color: #9ddfc4; flex: none;
+}
+#contact [data-stream-state="running"] .contact-stream-viewport {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #0003 9%, #000 22%, #000 78%, #0003 91%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #0003 9%, #000 22%, #000 78%, #0003 91%, transparent);
+}
+#contact [data-stream-state="running"] .contact-stream-fallback { visibility: hidden; }
+#contact [data-stream-state="running"] .contact-stream-track { visibility: visible; will-change: transform; }
+#contact .contact-stream-toggle {
+  position: absolute; right: 0; top: 0; display: inline-flex; align-items: center;
+  gap: 9px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 4px;
+  font: 10px/1.4 var(--mono); letter-spacing: .02em; color: #a4bcb4;
+  background: #0b1515a0; transition: color .2s, border-color .2s;
+}
+#contact .contact-stream-toggle:hover:not(:disabled) { color: var(--cyan); border-color: #a0edd366; }
+#contact .contact-stream-toggle:disabled { opacity: .65; cursor: default; }
+#contact .contact-bottom { margin-top: 32px; }
+/* Normalize the bottom bar whether the source had a wrapper already or not. */
+footer.footer { display: block; padding: 0; }
+footer.footer .footer-bar {
+  display: flex; width: 100%; align-items: center; gap: 32px;
+  padding: 28px 3.3vw;
+}
+footer.footer .footer-bar p { margin: 0 auto; }
+footer.footer .footer-bar > button { font: 10px/1.5 var(--mono); color: #a0b5ae; }
+@media(max-width: 900px) {
+  footer.footer .footer-bar > button { margin-left: auto; }
+  #contact .contact-stream-toggle { top: -43px; font-size: 9px; padding: 7px 10px; }
+}
+@media(max-width: 759px) {
+  #contact { scroll-margin-top: 67px; }
+  #contact .contact-stream-heading { font-size: clamp(30px, 9.8vw, 74px); letter-spacing: -.055em; }
+  #contact .contact-stream-viewport { height: 2em; }
+  #contact .contact-stream-toggle { position: static; margin: 5px 0 0; min-height: 34px; }
+  #contact .contact-bottom { margin-top: 27px; }
+  footer.footer .footer-bar { flex-wrap: wrap; gap: 18px; padding: 24px; }
+  footer.footer .footer-bar > button { font-size: 9px; }
+}
+html[data-motion="reduced"] #contact .contact-stream-track { visibility: hidden !important; }
+html[data-motion="reduced"] #contact .contact-stream-fallback { visibility: visible !important; }
+html[data-motion="reduced"] #contact .contact-stream-viewport { mask-image: none !important; -webkit-mask-image: none !important; }
+@media(prefers-reduced-motion: reduce) {
+  #contact .contact-stream-track { visibility: hidden !important; }
+  #contact .contact-stream-fallback { visibility: visible !important; }
+  #contact .contact-stream-viewport { mask-image: none !important; -webkit-mask-image: none !important; }
+}
+@media print {
+  #contact .contact-stream-track, #contact .contact-stream-toggle { display: none !important; }
+  #contact .contact-stream-fallback { visibility: visible !important; color: #222; }
+  #contact .contact-stream-viewport { mask-image: none !important; -webkit-mask-image: none !important; }
+}

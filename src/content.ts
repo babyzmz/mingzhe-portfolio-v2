@@ -27,8 +27,8 @@ export const projects: Project[] = [
   ],
   "url": "https://github.com/babyzmz/Fairy-LLM",
   "en": {
-   "category": "LOCAL-FIRST AI COMPANION",
-   "summary": "A desktop AI assistant for project conversations, document retrieval, tools and file previews, with pet and voice interaction.",
+   "category": "PERSONAL DEVICE AI ASSISTANT",
+   "summary": "Building an intelligent assistant for personal devices, bringing conversations, document retrieval and controlled tool use into everyday work.",
    "role": "Self-directed, AI-assisted project development: requirements, provider integration, animated desktop interactions, debugging and focused validation.",
    "status": "In development · companion features in Beta",
    "evidence": "Current supplied CV and the public Fairy V3 repository describe the desktop shell, Core, capability adapters and documented release scope. Real screenshots and a blurred screen recording captured on 2026-09-19 show the permission settings, Skills/MCP catalogue, model configuration and browser-state pages of the running app.",
@@ -42,8 +42,8 @@ export const projects: Project[] = [
    "challenge": "A passing build is not the same as a usable desktop app. My work includes reproducing window and interaction issues and checking real behaviour beyond automated tests."
   },
   "zh": {
-   "category": "本地优先的 AI 桌面助手",
-   "summary": "围绕项目聊天、检索文档、使用工具并预览生成文件的桌面 AI 助手，同时探索桌宠与语音交互。",
+   "category": "个人终端智能助手",
+   "summary": "以成为个人终端的智能助手为目标，将对话、资料检索与受控工具操作融入日常工作。",
    "role": "自主、AI 辅助的项目开发：需求拆解、模型接入、桌宠动画和窗口交互、问题排查与针对性验证。",
    "status": "持续开发 · 实时陪伴处于 Beta",
    "evidence": "依据已提供的新简历和 Fairy V3 公开仓库；仓库描述了桌面壳、Core、能力适配和发布范围。2026-09-19 实拍的截图与打码录屏展示了运行中应用的权限设置、Skills/MCP 目录、模型配置与浏览器状态页面。",
@@ -63,10 +63,10 @@ export const projects: Project[] = [
   "short": "MC",
   "kind": "ai",
   "stack": [
-   "TypeScript",
-   "Python",
+   "Node.js / TypeScript",
    "REST / SSE",
-   "SQLite / PostgreSQL"
+   "PostgreSQL",
+   "Multi-language SDKs"
   ],
   "url": null,
   "en": {
@@ -74,13 +74,13 @@ export const projects: Project[] = [
    "summary": "The shared backend foundation for MojoClaw and MojoAX, with work on recorded tasks, cancellation, retries and restoration.",
    "role": "AI-assisted backend development and iteration on shared runtime capabilities, task lifecycle, recovery and contract checks.",
    "status": "Ongoing development · private project",
-   "evidence": "The supplied CV describes durable runs, replay, cancellation and recovery work. Reviewed project documentation establishes the shared Core / product-shell boundary. Personal contribution scope comes from the CV, not an independent authorship audit.",
+   "evidence": "Source reviewed on 2026-09-21: the run gateway, SSE replay routes and conversation projection implement persistence, idempotency checks and terminal-state handling. Contribution scope follows the supplied CV. Live model and recovery acceptance were not rerun.",
    "limits": "No public runtime demo or private source is exposed here. This portfolio does not certify end-to-end production readiness. Fairy has its own Core and is not shown as a MojoCore client.",
    "features": [
-    "Shared capability contracts and product-facing adapters.",
-    "Work on persistent assistant runs, replay, cancellation and state recovery.",
-    "Duplicate-request handling and authenticated user boundaries.",
-    "Focused smoke and contract checks for runtime and artifact workflows."
+    "PostgreSQL-backed runs, ordered events and cursor-based SSE replay.",
+    "Idempotency keys checked against request content and identity.",
+    "Consistent success, failure, cancellation and timeout handling.",
+    "Shared contracts, product adapters and multi-language SDKs."
    ],
    "challenge": "A task must remain understandable after a refresh, cancellation or retry. I focus on where execution state lives and how the UI recovers it without inventing a new state."
   },
@@ -89,13 +89,13 @@ export const projects: Project[] = [
    "summary": "MojoClaw 与 MojoAX 共用的后端基础，开发重点包括任务记录、取消、重复请求与刷新后的状态恢复。",
    "role": "借助 AI 开发与迭代共享后端能力、任务生命周期、恢复机制和接口契约检查。",
    "status": "持续开发 · 私有项目",
-   "evidence": "新简历描述了持久化任务、重放、取消和恢复方面的工作；已查阅的项目文档支持共享 Core 与产品壳的分工。个人贡献依据简历，并非独立代码归属审计。",
+   "evidence": "2026-09-21 核对本机源码：任务网关、SSE 重放路由和会话投影包含持久化、幂等校验与终态处理。开发贡献范围依据所附简历；本次未运行真实模型或恢复验收。",
    "limits": "本站不开放私有源码或公开运行演示，也不证明整套系统已经达到生产就绪。Fairy 拥有自己的 Core，不作为 MojoCore 客户端展示。",
    "features": [
-    "共享能力契约与面向产品的适配层。",
-    "持久化 AI 任务、事件重放、取消与状态恢复。",
-    "重复请求处理与经过验证的用户身份边界。",
-    "运行时与生成物工作流的针对性冒烟和契约检查。"
+    "PostgreSQL 持久化任务、顺序事件与 SSE 游标重放。",
+    "幂等键、请求内容与身份冲突校验。",
+    "成功、失败、取消、超时的统一终态处理。",
+    "共享契约、产品适配层与多语言 SDK。"
    ],
    "challenge": "刷新、取消、重试之后，任务仍应有明确状态。我的重点是执行状态的归属，以及界面如何恢复它，而不是自行猜测出另一套状态。"
   }
@@ -106,39 +106,39 @@ export const projects: Project[] = [
   "short": "M/",
   "kind": "ai",
   "stack": [
-   "Web / Electron",
-   "TypeScript",
+   "React / TypeScript",
+   "Electron",
    "Core APIs",
    "SSE"
   ],
   "url": null,
   "en": {
-   "category": "PERSONAL AI WORKBENCH",
-   "summary": "A personal AI workbench that brings chat, project tasks and generated files together, presenting execution through shared Core services.",
+   "category": "PERSONAL AI SAAS",
+   "summary": "An AI SaaS service for individuals, bringing conversations, project tasks and generated files together across web and desktop workspaces.",
    "role": "AI-assisted application development: project/task interfaces, Core API integration, failure investigation and chat-flow smoke checks.",
    "status": "Ongoing development · private project",
-   "evidence": "The supplied CV and reviewed project documentation support the personal workbench, product adapter and Core proxy boundaries.",
+   "evidence": "Source reviewed on 2026-09-21: Web/Electron structure, shared durable-run state, message ordering and HTML artifact previews. Contribution scope follows the CV; native and live chat acceptance were not rerun.",
    "limits": "The scene is an interface architecture illustration, not a live product session or screenshot. No currently verified public deployment is linked.",
    "features": [
-    "Conversations and project/task organisation.",
-    "Generated-file previews and shared Core integration.",
-    "Streaming, cancellation and conversation restoration work.",
-    "Authentication and model-provider error investigation."
+    "Conversations, projects and tasks in React / Electron workspaces.",
+    "Generated-file and HTML artifact previews.",
+    "Shared durable-run state and message ordering across Web and desktop.",
+    "Core-backed streaming, cancellation and conversation recovery."
    ],
    "challenge": "The frontend should show the actual state of a task. Keeping the product interface and execution core separate makes that responsibility clearer."
   },
   "zh": {
-   "category": "个人 AI 工作台",
-   "summary": "个人 AI 工作台，把聊天、项目任务和生成文件放在一起，通过共享 Core 执行并展示任务进展。",
+   "category": "面向个人的 AI SaaS 服务",
+   "summary": "面向个人用户的 AI SaaS 服务，通过网页与桌面工作台组织对话、项目任务和生成文件。",
    "role": "使用 AI 辅助开发项目与任务界面、接入 Core API、排查失败原因并执行聊天流程冒烟检查。",
    "status": "持续开发 · 私有项目",
-   "evidence": "依据新简历及已查阅的项目文档，支持个人工作台、产品适配层与 Core 代理边界的描述。",
+   "evidence": "2026-09-21 核对本机源码：Web 与 Electron 结构、共享持久化任务状态、消息排序和 HTML 生成物预览。开发贡献依据简历；本次未复测原生端或真实聊天全链路。",
    "limits": "本页是界面架构示意，不是真实产品会话或截图。未链接当前已验证的公网部署。",
    "features": [
-    "聊天与项目、任务组织。",
-    "生成文件预览和共享 Core 接入。",
-    "流式响应、取消与会话恢复。",
-    "认证及模型供应商错误的排查。"
+    "React / Electron 工作台中的会话、项目与任务。",
+    "生成文件与 HTML 页面预览。",
+    "Web 与桌面共享任务状态和消息排序逻辑。",
+    "通过 Core 接入流式任务、取消与会话恢复。"
    ],
    "challenge": "前端应该展示任务的真实状态。把产品界面与执行核心分开，可以让这个责任更清晰。"
   }
@@ -149,9 +149,9 @@ export const projects: Project[] = [
   "short": "AX",
   "kind": "ai",
   "stack": [
-   "React",
-   "TypeScript",
-   "Enterprise UI",
+   "React / TypeScript",
+   "Tailwind CSS",
+   "Electron",
    "Core APIs"
   ],
   "url": null,
@@ -160,13 +160,13 @@ export const projects: Project[] = [
    "summary": "An enterprise AI workbench organising reference material, files and task-relevant views around shared runtime capabilities.",
    "role": "AI-assisted enterprise UI development, shared runtime integration and translation of business-system requirements into implementation tasks.",
    "status": "Ongoing development · private project",
-   "evidence": "The supplied CV describes workbench development and shared-service integration. Reviewed repository documentation differentiates the enterprise shell from MojoClaw and notes unfinished enterprise integration areas.",
+   "evidence": "Source reviewed on 2026-09-21: the Surface controller supports automatic selection, pinning and split view; SSO and tenant controllers call Core and are no longer described collectively as placeholders. External identity and enterprise workflows were not rerun.",
    "limits": "Not presented as a complete ERP or a fully deployed enterprise platform. Scaffolds, unverified integrations and roadmap items are not promoted to delivered features.",
    "features": [
-    "Enterprise-facing workbench and differentiated information layout.",
-    "Shared AI/runtime service integration through a product adapter.",
-    "Business requirements translated into interface workflows.",
-    "Integration troubleshooting and deployment verification work."
+    "Tool-driven surfaces with pinning and split view.",
+    "Workspaces, projects, task activity and artifact organisation.",
+    "Core integration for SSO sessions, tenant lists and switching.",
+    "Distinct enterprise interaction with explicit loading and error states."
    ],
    "challenge": "The enterprise product needs its own workflow and information hierarchy, rather than just renaming the personal application."
   },
@@ -175,13 +175,13 @@ export const projects: Project[] = [
    "summary": "企业 AI 工作台，围绕业务任务组织资料、文件与执行界面，通过产品适配层接入共享能力。",
    "role": "AI 辅助企业界面开发、共享运行服务接入，以及把业务系统需求转化为开发任务。",
    "status": "持续开发 · 私有项目",
-   "evidence": "新简历记录了工作台开发和共享服务接入；已查阅的仓库文档区分了企业壳与 MojoClaw，并明确部分企业接入尚未完成。",
+   "evidence": "2026-09-21 核对本机源码：Surface 控制器支持自动召唤、固定与分屏；SSO 和租户控制器已有 Core 调用，不再笼统归为占位。外部身份服务和企业流程未在本次复测。",
    "limits": "不作为完整 ERP 或全面上线的企业平台宣传。占位结构、未验证接入与规划项不写成已交付功能。",
    "features": [
-    "面向企业的信息组织与工作台界面。",
-    "通过产品适配层接入共享 AI 和运行能力。",
-    "把业务需求转化为界面与工作流任务。",
-    "集成问题排查与部署验证相关工作。"
+    "工具活动驱动工作面板，支持固定与分屏。",
+    "工作区、项目、任务过程与生成物的信息组织。",
+    "SSO 会话与租户列表、切换的 Core 接入。",
+    "独立的企业交互与明确的加载、失败状态。"
    ],
    "challenge": "企业产品需要自己的工作流和信息层级，而不是简单地给个人版更换名称。"
   }
@@ -411,7 +411,7 @@ export const text: Record<Locale,Record<string,string>> = {
   "fairyKicker": "01 / A DESKTOP PRESENCE",
   "fairyA": "Meet",
   "fairyB": "Fairy.",
-  "fairyDesc": "Talk through projects, retrieve documents, use tools and preview files. Pet and voice interaction give this local-first AI workspace a desktop presence.",
+  "fairyDesc": "Building an intelligent assistant for personal devices, bringing conversations, document retrieval and controlled tool use into everyday work.",
   "fairyNote": "Local-first · Windows · In development",
   "case": "Inside the project",
   "source": "View source",
@@ -430,8 +430,8 @@ export const text: Record<Locale,Record<string,string>> = {
   "mojoKicker": "03 / ONE CORE. TWO CONTEXTS.",
   "mojoA": "Personal focus.",
   "mojoB": "Enterprise intent.",
-  "mojoDesc": "MojoClaw organises personal conversations, tasks and files. MojoAX arranges task-relevant views for teams. Both consume shared Core capabilities.",
-  "clawLabel": "For individuals",
+  "mojoDesc": "MojoClaw brings personal AI SaaS to web and desktop, while MojoAX organises work for enterprise teams. Both draw on MojoCore, with distinct experiences for their users.",
+  "clawLabel": "Personal AI SaaS · Web & desktop",
   "axLabel": "For teams & organisations",
   "diagram": "ARCHITECTURE ILLUSTRATION · NOT A LIVE SESSION",
   "methodKicker": "04 / HOW I BUILD",
@@ -536,7 +536,7 @@ export const text: Record<Locale,Record<string,string>> = {
   "fairyKicker": "01 / 不止一个聊天窗口",
   "fairyA": "认识",
   "fairyB": "Fairy。",
-  "fairyDesc": "围绕项目对话、检索文档、使用工具并预览生成文件。桌宠与语音，让这个本地优先的 AI 助手有了更直接的桌面交互。",
+  "fairyDesc": "以成为个人终端的智能助手为目标，将对话、资料检索与受控工具操作融入日常工作。",
   "fairyNote": "本地优先 · Windows · 持续开发",
   "case": "深入了解项目",
   "source": "查看源码",
@@ -555,8 +555,8 @@ export const text: Record<Locale,Record<string,string>> = {
   "mojoKicker": "03 / 同一核心，不同场景",
   "mojoA": "个人的专注。",
   "mojoB": "企业的协同。",
-  "mojoDesc": "MojoClaw 把个人的聊天、任务与文件组织起来；MojoAX 围绕团队业务安排工作界面。两个产品通过共享 Core 执行 AI 工作。",
-  "clawLabel": "面向个人",
+  "mojoDesc": "MojoClaw 面向个人，提供网页与桌面 AI SaaS 工作台；MojoAX 面向企业组织团队工作。两种产品共享 MojoCore 的能力基础，但保留不同的使用体验。",
+  "clawLabel": "个人 AI SaaS · 网页与桌面",
   "axLabel": "面向团队与组织",
   "diagram": "架构示意 · 非真实运行会话",
   "methodKicker": "04 / 我的开发方式",

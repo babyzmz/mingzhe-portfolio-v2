@@ -1,0 +1,49 @@
+name: Verify local-upload integration
+on:
+  push:
+    branches: [main, fix/sync-local-and-contact-20260923]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: local-sync-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build and check both editions
+        run: |
+          npm run build:offline
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Install browser test runtime
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Real HTTP integration at the Pages subpath
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
+        run: python tests/local-sync.browser.py --serve
+      - name: Record the verified revision
+        if: always()
+        run: |
+          mkdir -p test-artifacts/local-sync
+          git rev-parse HEAD > test-artifacts/local-sync/source-revision.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-sync-browser-results
+          path: test-artifacts/local-sync/
+          retention-days: 7

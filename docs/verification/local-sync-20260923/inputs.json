@@ -1,0 +1,31 @@
+{
+  "inputs": [
+    {
+      "filename": "index.html",
+      "bytes": 1796,
+      "sha256": "3b1bb6be194b627890333544a26d92f62e48204c3e7f283deb0aaf021283266b"
+    },
+    {
+      "filename": "index-C-laUW81.js",
+      "bytes": 193645,
+      "sha256": "92ce779cd49891092e6bdf636f3907826cd42626f3e1bb2373e6916a574c2c2a"
+    },
+    {
+      "filename": "index-C7SiECqc.css",
+      "bytes": 71788,
+      "sha256": "72aaea8b32e6434f49ba085171df17026471a8605caa9ee9afb7dbb7365ec08b"
+    },
+    {
+      "filename": "index-Bvu9zNsI.js",
+      "bytes": 70848,
+      "sha256": "3efcc2c9016df2a5a646b223cce885dff7021bf543c1cc5c4ecc815ef2cdc748"
+    },
+    {
+      "filename": "ScrollTrigger-7Zy99s9Q.js",
+      "bytes": 43986,
+      "sha256": "3193106bd8610c1839a0f1e25ec7e80577a60902982839386709a9836f0af7d6"
+    }
+  ],
+  "source_base": "0d6e932d8e4891a6b6ec09c98ccf5dcbaec907d2",
+  "integration": "source-level reconstruction; generated Vite filenames are deliberately regenerated"
+}

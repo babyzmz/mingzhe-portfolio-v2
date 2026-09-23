@@ -1,4 +1,4 @@
 import{spawnSync,execFileSync}from'node:child_process';import{createRequire}from'node:module';import path from'node:path';
 const require=createRequire(import.meta.url);let compiler;try{compiler=require.resolve('typescript/bin/tsc')}catch{compiler=path.join(execFileSync('npm',['root','-g'],{encoding:'utf8'}).trim(),'typescript/bin/tsc')}
 let r=spawnSync(process.execPath,[compiler,'-p','tsconfig.offline.json'],{stdio:'inherit'});if(r.status)process.exit(r.status);
-r=spawnSync(process.execPath,['--test','tests/state.test.mjs','tests/content.test.mjs','tests/case-content.test.mjs','tests/project-links.test.mjs','tests/project-media.test.mjs','tests/serve-range.test.mjs'],{stdio:'inherit'});process.exit(r.status||0);
+r=spawnSync(process.execPath,['--test','tests/state.test.mjs','tests/content.test.mjs','tests/case-content.test.mjs','tests/project-links.test.mjs','tests/project-media.test.mjs','tests/serve-range.test.mjs','tests/local-upload-parity.test.mjs','tests/contact-stream.test.mjs','tests/word-reveal.test.mjs'],{stdio:'inherit'});process.exit(r.status||0);
