@@ -1,0 +1,112 @@
+name: Apply and verify requested atmosphere integration
+on:
+  push:
+    branches: [feat/reactbits-atmosphere-20260923]
+    paths: [.github/workflows/apply-atmosphere.yml, .github/integration/**]
+permissions:
+  contents: write
+concurrency:
+  group: apply-atmosphere-20260923
+  cancel-in-progress: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Apply exact locally reviewed source changes
+        shell: python
+        run: |
+          import pathlib,lzma,hashlib,subprocess,os
+          assert os.environ['GITHUB_REF']=='refs/heads/feat/reactbits-atmosphere-20260923'
+          data=b''.join(pathlib.Path('.github/integration/atmosphere.part'+str(i)).read_bytes() for i in range(2))
+          assert hashlib.sha256(data).hexdigest()=='145425e2bba4e215ece789a5ec88f3358c5dc33970be3ec4e5744cfe6be44191'
+          patch=pathlib.Path(os.environ['RUNNER_TEMP'])/'atmosphere.patch';patch.write_bytes(lzma.decompress(data))
+          subprocess.run(['git','apply','--check','--index','--unidiff-zero',str(patch)],check=True)
+          subprocess.run(['git','apply','--index','--unidiff-zero',str(patch)],check=True)
+      - name: Generate reviewed GLSL from pinned, hash-verified reference
+        shell: python
+        run: |
+          import re,urllib.request,hashlib,pathlib,json
+          base='https://raw.githubusercontent.com/DavidHDev/react-bits/c5df8610c0b47d7cd805cda480baba402f7267c1/src/ts-default/Backgrounds/'
+          def source(name,wanted):
+              data=urllib.request.urlopen(base+name+'/'+name+'.tsx',timeout=30).read()
+              assert hashlib.sha256(data).hexdigest()==wanted
+              return data.decode()
+          p=source('LightPillar','a973c16a892d012a391fc2616ede3a1c9a041da672d536fbecc7e6a9c5da7771')
+          p=re.search(r'const fragmentShader = `([\s\S]*?)`;',p).group(1)
+          p=p.replace('${settings.precision}','highp').replace('${settings.stepMultiplier.toFixed(1)}','1.2').replace('${settings.iterations}','40').replace('${settings.waveIterations}','2')
+          p=p.replace('uniform float uTime;', 'uniform float uTime;\n      uniform float uCenter;\n      uniform float uOpacity;')
+          p=p.replace('vec2 uv = (vUv * 2.0 - 1.0)', 'vec2 uv = ((vUv - vec2(uCenter - 0.5, 0.0)) * 2.0 - 1.0)')
+          p=p.replace('void main() {','vec3 stableTanh(vec3 x){vec3 e=exp(-2.0*max(x,vec3(0.0)));return (1.0-e)/(1.0+e);}\n      void main() {',1).replace('col = tanh(', 'col = stableTanh(')
+          p=p.replace('gl_FragColor = vec4(result, 1.0);','float textProtection = smoothstep(0.20, 0.69, vUv.x);\n        float softEdges = smoothstep(0.0, 0.13, vUv.y) * (1.0-smoothstep(0.91,1.0,vUv.y));\n        gl_FragColor = vec4(result * uOpacity * mix(0.12,1.0,textProtection) * softEdges, 1.0);')
+          v=source('DarkVeil','4dc566884147b450c6ff5c0e8c5d3773a8beed3b0a9a5775bcb2954085bc5edd')
+          v=re.search(r'const fragment = `([\s\S]*?)`;',v).group(1).replace('precision lowp float;','precision highp float;')
+          v=v.replace('uniform float uLightMode;', 'uniform float uLightMode;\nuniform float uOpacity;')
+          v=v.replace('gl_FragColor=vec4(result,1.0);', 'float sideLight = mix(0.5,1.0,smoothstep(0.1,0.95,gl_FragCoord.x/uResolution.x));\n    gl_FragColor=vec4(result*uOpacity*sideLight,1.0);')
+          header='/**\n * Website-specific adaptations of React Bits LightPillar and DarkVeil.\n * Copyright (c) 2026 David Haz — MIT + Commons Clause.\n * Pinned upstream c5df8610c0b47d7cd805cda480baba402f7267c1.\n * Full notice: public/third-party/react-bits-license.txt.\n * GLSL retained; lifecycle, placement and tone adapted for this portfolio.\n */\n'
+          code=header+'export const atmosphereVertex = `attribute vec2 position; varying vec2 vUv; void main(){vUv=position*.5+.5;gl_Position=vec4(position,0.,1.);}`;\nexport const pillarFragment = `'+p+'`;\nexport const veilFragment = `'+v+'`;\n'
+          code=code.replace('uniform float uCenter;', 'uniform bool uLowQuality;\n      uniform float uCenter;').replace('for(int i = 0; i < MAX_ITER; i++) {','for(int i = 0; i < MAX_ITER; i++) {\n          if(uLowQuality && i >= 24) break;').replace('for(int j = 0; j < WAVE_ITER; j++) {','for(int j = 0; j < WAVE_ITER; j++) {\n            if(uLowQuality && j >= 1) break;')
+          pathlib.Path('src/atmosphere-shaders.ts').write_text(code,encoding='utf-8')
+          expected=json.loads(pathlib.Path('.github/integration/atmosphere-hashes.json').read_text())
+          for name,digest in expected.items():
+              assert hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()==digest,name
+          print('All 14 source hashes match reviewed implementation.')
+      - run: npm ci
+      - name: Verify both builds, all unit tests and public-data gate
+        run: |
+          npm run build:offline
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Install real browser
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Verify real WebGL shaders and five integrated effects over HTTP
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
+        run: python tests/atmosphere.browser.py
+      - name: Verify explicit WebGL-unavailable fallback
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox
+          ATMOSPHERE_TEST_OUTPUT: test-artifacts/atmosphere-fallback
+        run: python tests/atmosphere.browser.py --fallback
+      - name: Regress previous footer and word animations
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
+        run: python tests/local-sync.browser.py --serve
+      - name: Commit only verified website sources to isolated branch
+        env:
+          EXPECTED_HEAD: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          branch='feat/reactbits-atmosphere-20260923'
+          actual=$(git ls-remote origin "refs/heads/$branch" | cut -f1)
+          test "$actual" = "$EXPECTED_HEAD"
+          git add src/atmosphere-shaders.ts Mingzhe-Portfolio-Preview.html
+          if git diff --cached --name-only | grep -q '^.github/'; then echo 'Workflow changes are not permitted in source commit'; exit 1; fi
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: integrate subtle React Bits backgrounds, circular mark and project card lighting'
+          git push origin "HEAD:refs/heads/$branch"
+          git rev-parse HEAD > test-artifacts/atmosphere/verified-revision.txt
+      - name: Preserve actual screenshots, results and build
+        if: always()
+        run: |
+          mkdir -p test-artifacts/atmosphere
+          git archive --format=tar HEAD > test-artifacts/atmosphere/source.tar
+          if [ -d dist ]; then tar -czf test-artifacts/atmosphere/site-dist.tar.gz dist; fi
+          if [ -f Mingzhe-Portfolio-Preview.html ]; then cp Mingzhe-Portfolio-Preview.html test-artifacts/atmosphere/; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verified-atmosphere-integration
+          path: test-artifacts/
+          retention-days: 7
