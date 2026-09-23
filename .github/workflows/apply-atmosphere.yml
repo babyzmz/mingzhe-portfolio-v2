@@ -56,6 +56,18 @@ jobs:
           for name,digest in expected.items():
               assert hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()==digest,name
           print('All 14 source hashes match reviewed implementation.')
+      - name: Verify the accessibility contract by motion rather than CSS shorthand state
+        shell: python
+        run: |
+          import pathlib,hashlib,subprocess
+          path=pathlib.Path('tests/atmosphere.browser.py');text=path.read_text()
+          old="  check('global pause freezes circular text',ring.evaluate('(e)=>getComputedStyle(e).animationPlayState')=='paused')"
+          new="  paused_transform=ring.evaluate('(e)=>getComputedStyle(e).transform');page.wait_for_timeout(250)\n  check('global pause freezes circular text',paused_transform==ring.evaluate('(e)=>getComputedStyle(e).transform') and ring.evaluate('(e)=>e.getAnimations().every(a=>a.playState!==\"running\")'))"
+          assert text.count(old)==1
+          text=text.replace(old,new).replace("b,info=launch_browser(p,['--disable-webgl'] if fallback else [])","b,info=launch_browser(p,['--disable-webgl'] if fallback else []);info['mode']='HTTP '+URL")
+          path.write_text(text)
+          assert hashlib.sha256(path.read_bytes()).hexdigest()=='5d407aeb452f6464a2373ededeb9c16ee9a0508465153e8cfee24f4b12d06529'
+          subprocess.run(['git','add',str(path)],check=True)
       - run: npm ci
       - name: Verify both builds, all unit tests and public-data gate
         run: |
