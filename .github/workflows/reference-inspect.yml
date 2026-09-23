@@ -1,0 +1,21 @@
+name: Inspect requested animation reference
+on:
+  push:
+    branches: [fix/sync-local-and-contact-20260923]
+    paths: [.github/workflows/reference-inspect.yml]
+permissions:
+  contents: read
+jobs:
+  reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Fetch public reference scripts
+        run: |
+          mkdir -p reference
+          curl --fail --location --max-time 30 https://www.rewampui.com/assets/index-CwbguXRW.js -o reference/rewamp-app.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: animation-reference
+          path: reference/
+          retention-days: 1
