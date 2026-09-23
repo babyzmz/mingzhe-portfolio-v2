@@ -56,7 +56,7 @@ jobs:
           for name,digest in expected.items():
               assert hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest()==digest,name
           print('All 14 source hashes match reviewed implementation.')
-      - name: Verify the accessibility contract by motion rather than CSS shorthand state
+      - name: Normalize shader whitespace and verify actual accessibility behavior
         shell: python
         run: |
           import pathlib,hashlib,subprocess
@@ -68,6 +68,9 @@ jobs:
           path.write_text(text)
           assert hashlib.sha256(path.read_bytes()).hexdigest()=='5d407aeb452f6464a2373ededeb9c16ee9a0508465153e8cfee24f4b12d06529'
           subprocess.run(['git','add',str(path)],check=True)
+          shader=pathlib.Path('src/atmosphere-shaders.ts')
+          shader.write_text('\n'.join(line.rstrip() for line in shader.read_text().splitlines())+'\n')
+          assert hashlib.sha256(shader.read_bytes()).hexdigest()=='3d74be5f07a16a6f8696883ddbee55559603a2b2dd0274b20b32b4e3616053e3'
       - run: npm ci
       - name: Verify both builds, all unit tests and public-data gate
         run: |
