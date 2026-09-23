@@ -1,0 +1,43 @@
+name: Capture atmosphere integration inputs
+on:
+  push:
+    branches: [feat/reactbits-atmosphere-20260923]
+    paths: [.github/workflows/atmosphere-intake.yml]
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive current source
+        run: |
+          mkdir -p intake
+          git archive --format=tar HEAD > intake/source.tar
+          git rev-parse HEAD > intake/revision.txt
+      - name: Fetch pinned public component sources without executing them
+        shell: python
+        run: |
+          import urllib.request,json,pathlib,hashlib
+          def fetch(url):
+              return urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'portfolio-source-review'}),timeout=30).read()
+          api='https://api.github.com/repos/DavidHDev/react-bits'
+          sha=json.loads(fetch(api+'/commits/main'))['sha']
+          tree=json.loads(fetch(api+'/git/trees/'+sha+'?recursive=1'))['tree']
+          names=['LightPillar','DarkVeil','CircularText','BorderGlow','SpotlightCard']
+          root=pathlib.Path('intake/reactbits');root.mkdir(parents=True)
+          records=[]
+          for entry in tree:
+              path=entry['path']
+              if path=='LICENSE' or (path.startswith('src/ts-default/') and any('/'+n+'/' in path for n in names) and path.endswith(('.tsx','.css'))):
+                  data=fetch('https://raw.githubusercontent.com/DavidHDev/react-bits/'+sha+'/'+path)
+                  dest=root/path;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data)
+                  records.append({'path':path,'sha256':hashlib.sha256(data).hexdigest()})
+          assert all(any('/'+n+'/' in r['path'] for r in records) for n in names),records
+          (root/'provenance.json').write_text(json.dumps({'repository':'DavidHDev/react-bits','commit':sha,'files':records},indent=2))
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atmosphere-inputs
+          path: intake/
+          retention-days: 7
