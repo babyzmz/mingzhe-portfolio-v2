@@ -1,0 +1,87 @@
+name: Apply approved portfolio source integration
+on:
+  push:
+    branches: [fix/sync-local-and-contact-20260923]
+    paths:
+      - .github/workflows/apply-local-sync.yml
+      - .github/integration/**
+permissions:
+  contents: write
+concurrency:
+  group: apply-approved-local-sync
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.repository == 'babyzmz/mingzhe-portfolio-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Apply exact reviewed source patch, never generated-only changes
+        shell: python
+        run: |
+          import hashlib, json, lzma, os, pathlib, subprocess
+          assert os.environ['GITHUB_REF'] == 'refs/heads/fix/sync-local-and-contact-20260923'
+          payload = pathlib.Path('.github/integration/site-update.patch.xz').read_bytes()
+          assert hashlib.sha256(payload).hexdigest() == '5043b64cd0ee3aa5294d49d45645168a9bb1316fb2e99656eceb5f6fe211c028'
+          patch = pathlib.Path(os.environ['RUNNER_TEMP']) / 'site-update.patch'
+          patch.write_bytes(lzma.decompress(payload))
+          subprocess.run(['git','apply','--check','--index','--unidiff-zero',str(patch)],check=True)
+          subprocess.run(['git','apply','--index','--unidiff-zero',str(patch)],check=True)
+          expected = json.loads(pathlib.Path('.github/integration/expected-sha256.json').read_text())
+          for name, digest in expected.items():
+              assert hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest() == digest, name
+          out = pathlib.Path('test-artifacts/local-sync'); out.mkdir(parents=True,exist_ok=True)
+          (out/'expected-source-hashes.json').write_text(json.dumps(expected,indent=2))
+          print('All 20 reviewed source hashes match.')
+      - run: npm ci
+      - name: Build, content parity, unit, bundle and privacy gates
+        run: |
+          npm run build:offline
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Prepare real browser
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Actual HTTP browser verification before committing
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
+        run: python tests/local-sync.browser.py --serve
+      - name: Commit only after all checks pass; do not update main
+        env:
+          EXPECTED_HEAD: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          branch='fix/sync-local-and-contact-20260923'
+          actual=$(git ls-remote origin "refs/heads/$branch" | cut -f1)
+          test "$actual" = "$EXPECTED_HEAD"
+          git add Mingzhe-Portfolio-Preview.html
+          git rm .github/workflows/reference-inspect.yml .github/workflows/apply-local-sync.yml .github/integration/site-update.patch.xz .github/integration/expected-sha256.json
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'feat: sync local updates, fix contact stream and add bilingual word reveal'
+          git push origin "HEAD:refs/heads/$branch"
+          git rev-parse HEAD > test-artifacts/local-sync/verified-source-revision.txt
+      - name: Preserve exact evidence and built preview
+        if: always()
+        run: |
+          mkdir -p test-artifacts/local-sync
+          if [ -d dist ]; then tar -czf test-artifacts/local-sync/site-dist.tar.gz dist; fi
+          if [ -f Mingzhe-Portfolio-Preview.html ]; then cp Mingzhe-Portfolio-Preview.html test-artifacts/local-sync/; fi
+          git diff --stat > test-artifacts/local-sync/uncommitted-summary.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approved-local-sync-results
+          path: test-artifacts/local-sync/
+          retention-days: 7
