@@ -1,0 +1,113 @@
+name: Publish owner-approved resume replacement
+# This one-off publication keeps the normal Pages workflow manual.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-approved-resume.yml]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: approved-resume-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'babyzmz/mingzhe-portfolio-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: babyzmz/mingzhe-portfolio-v2
+      RESUME_SHA256: 78b54fa878d449b75bad5d8020b35a8ce0cba2752567108fc7f0a0257939c761
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Guard approved revision and the resume-only scope
+        shell: python
+        run: |
+          import base64,hashlib,os,pathlib,re,subprocess
+          assert os.environ['GITHUB_REF']=='refs/heads/main'
+          parent=subprocess.check_output(['git','rev-parse','HEAD^'],text=True).strip()
+          assert parent=='92e2a69bdfe986d745c1c3a468adc0370a1174df'
+          changed=set(subprocess.check_output(['git','diff','--name-only',parent,'HEAD'],text=True).splitlines())
+          assert changed=={'public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf','Mingzhe-Portfolio-Preview.html','.github/workflows/publish-approved-resume.yml'},changed
+          expected=os.environ['RESUME_SHA256'];pdf=pathlib.Path('public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').read_bytes()
+          assert len(pdf)==74848 and hashlib.sha256(pdf).hexdigest()==expected
+          embedded=re.findall(r'data:application/pdf;base64,([A-Za-z0-9+/=]+)',pathlib.Path('Mingzhe-Portfolio-Preview.html').read_text())
+          assert len(embedded)==5
+          assert all(hashlib.sha256(base64.b64decode(data)).hexdigest()==expected for data in embedded)
+          print('Exact approved PDF in all 5 embedded references; project data, dates, source and design unchanged.')
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify reproducible preview and production assets
+        run: |
+          npm ci
+          npm run build:offline
+          git diff --exit-code -- Mingzhe-Portfolio-Preview.html
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Require fresh Windows CI for this main revision
+        run: |
+          set -euo pipefail
+          mkdir -p publication-evidence
+          id=''
+          for attempt in $(seq 1 30); do
+            id=$(gh run list --workflow ci.yml --commit "$GITHUB_SHA" --event push --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "$id"
+          echo "$id" > publication-evidence/windows-ci-run.txt
+          gh run watch "$id" --exit-status --interval 5
+      - name: Publish the checked main revision via existing Pages workflow
+        run: |
+          set -euo pipefail
+          actual=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+          test "$actual" = "$GITHUB_SHA"
+          gh workflow run pages.yml --ref main -f environment_name=github-pages
+          id=''
+          for attempt in $(seq 1 30); do
+            id=$(gh run list --workflow pages.yml --commit "$GITHUB_SHA" --event workflow_dispatch --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "$id"
+          echo "$id" > publication-evidence/pages-run.txt
+          gh run watch "$id" --exit-status --interval 5
+      - name: Verify public PDF bytes and unchanged application bundles
+        shell: python
+        run: |
+          import hashlib,json,os,pathlib,re,time,urllib.request
+          base='https://babyzmz.github.io/mingzhe-portfolio-v2/';name='documents/Mingzhe_Zhang_AI_Developer_Resume.pdf';sha=os.environ['GITHUB_SHA'];expected=os.environ['RESUME_SHA256']
+          assets={p.relative_to('dist').as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in pathlib.Path('dist/assets').iterdir() if p.suffix in ['.js','.css']}
+          def get(path):
+              with urllib.request.urlopen(urllib.request.Request(base+path,headers={'Cache-Control':'no-cache','User-Agent':'Portfolio-resume-verifier'}),timeout=30) as response:
+                  assert response.status==200
+                  return response.read(),response.headers.get('Content-Type','')
+          for attempt in range(36):
+              try:
+                  pdf,mime=get(name)
+                  assert len(pdf)==74848 and hashlib.sha256(pdf).hexdigest()==expected,'cached old CV'
+                  assert 'application/pdf' in mime,mime
+                  fresh,_=get(name+'?verified='+sha);assert fresh==pdf
+                  html,_=get('?verified='+sha)
+                  scripts=re.findall(r'src="[^"]*assets/([^"/]+\.js)"',html.decode());assert scripts
+                  for filename,digest in assets.items():assert hashlib.sha256(get(filename)[0]).hexdigest()==digest,filename
+                  assert all('assets/'+filename in assets for filename in scripts)
+                  report={'verified':True,'revision':sha,'resume_url':base+name,'pdf_sha256':expected,'bytes':len(pdf),'content_type':mime,'application_bundles_sha256':assets,'project_start_dates_added':False,'checked_at_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+                  pathlib.Path('publication-evidence/live-resume.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2));break
+              except Exception as exc:
+                  print('Waiting for verified publication:',str(exc),flush=True)
+                  if attempt==35:raise
+                  time.sleep(5)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resume-publication-evidence
+          path: publication-evidence/
+          retention-days: 14
