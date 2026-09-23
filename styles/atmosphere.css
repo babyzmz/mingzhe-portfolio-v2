@@ -1,0 +1,47 @@
+/* React Bits adaptations within this website. Copyright (c) 2026 David Haz.
+   MIT + Commons Clause notice: third-party/react-bits-license.txt. */
+.atmosphere-layer{position:fixed;inset:0;height:100svh;z-index:0;pointer-events:none;overflow:hidden;contain:strict;background:#080c12}
+#atmosphere-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;mix-blend-mode:screen}
+.atmosphere-fallback{position:absolute;inset:0;background:radial-gradient(ellipse 24% 100% at 74% 48%,#548e9242,transparent 90%),radial-gradient(ellipse 42% 80% at 86% 80%,#50548432,transparent 85%)}
+.atmosphere-layer[data-backend='webgl'] .atmosphere-fallback{opacity:.22}
+.atmosphere-layer[data-backend='css'] canvas{display:none}
+.atmosphere-layer[data-effect='veil'] .atmosphere-fallback{background:radial-gradient(ellipse at 80% 20%,#57509660,transparent 60%),radial-gradient(ellipse at 25% 80%,#29575030,transparent 65%)}
+.visuals{background:transparent;z-index:1}.journey{position:relative;z-index:2}
+.scene-vignette{background:linear-gradient(90deg,#080c12ae,transparent 62%),linear-gradient(180deg,#080c120d 70%,#080c1244)}
+.about-section,.contact-section,.footer{background:rgba(8,12,18,.50)}
+.about-section{background:linear-gradient(180deg,#080c12a6,rgba(8,12,18,.50) 180px)}
+.footer{background:rgba(8,12,18,.50)}
+.about-copy p,.timeline article small{color:#adb6c1}.about-section>.section-wrap>.eyebrow{color:#a4b8b8}
+/* One mark, original monogram at centre; only the letter ring rotates. */
+.header .nav-mark{position:relative;width:58px;height:58px;flex:none;display:grid;place-items:center}
+.header .nav-mark>svg{width:25px;height:25px}
+.nav-orbit{position:absolute;inset:0;border-radius:50%;color:#c0dad4;pointer-events:none}
+.nav-orbit-letters{position:absolute;inset:0;animation:mz-orbit 30s linear infinite}
+.nav-orbit-letters i{position:absolute;inset:0;display:block;text-align:center;font:6.8px/1 var(--mono);font-style:normal;font-weight:500;letter-spacing:0;transform:rotate(var(--char-angle));padding-top:1px}
+@keyframes mz-orbit{to{transform:rotate(360deg)}}
+.header .brand:hover .nav-orbit-letters,.header .brand:focus-visible .nav-orbit-letters{animation-play-state:paused}
+html[data-surface='light'] .nav-orbit{color:#345e50}
+html[data-ambient-motion='paused'] .nav-orbit-letters,html[data-motion='reduced'] .nav-orbit-letters{animation-play-state:paused}
+/* Unified radial interior and directional edge glow; imagery remains unfiltered. */
+#work [data-card-light]{--mouse-x:50%;--mouse-y:50%;--cursor-angle:0deg;--edge-proximity:0;--card-accent:64,133,123;position:relative;isolation:isolate;padding:14px 14px 12px;border:1px solid #c6d2c9;border-radius:13px;background:#f5f6f0;box-shadow:0 2px 4px #12351a05;transition:border-color .3s,box-shadow .3s}
+#work [data-card-light][data-project-card='ax'],#work [data-card-light][data-project-card='goodnight']{--card-accent:154,114,66}
+#work [data-card-light][data-project-card='tarot'],#work [data-card-light][data-project-card='core']{--card-accent:112,107,164}
+#work [data-card-light]>.card-spotlight{position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;background:radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),rgba(var(--card-accent),.19),transparent 70%);opacity:0;transition:opacity .35s ease-out}
+#work [data-card-light]>.card-edge-light{position:absolute;inset:-1px;pointer-events:none;z-index:3;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--cursor-angle),rgba(var(--card-accent),.95),#a2c4b4 9%,transparent 26%,transparent 74%,#bad9d4 91%,rgba(var(--card-accent),.95));mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;-webkit-mask-composite:xor;opacity:0;transition:opacity .3s}
+#work [data-card-light]::before{content:'';position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;box-shadow:0 0 20px 1px rgba(var(--card-accent),.20),inset 0 0 8px rgba(var(--card-accent),.10);opacity:0;transition:opacity .3s;mask-image:conic-gradient(from var(--cursor-angle),#000,transparent 26%,transparent 74%,#000)}
+#work [data-card-light][data-light-active='true']>.card-spotlight{opacity:1}
+#work [data-card-light][data-light-active='true']>.card-edge-light{opacity:calc(.26 + var(--edge-proximity)*.0074)}
+#work [data-card-light][data-light-active='true']::before{opacity:calc(var(--edge-proximity)*.01)}
+#work [data-card-light]:focus-within{border-color:rgb(var(--card-accent));box-shadow:0 0 0 2px rgba(var(--card-accent),.27)}
+#work [data-card-light]:focus-within>.card-spotlight{opacity:.65}
+#work [data-card-light]>:not(.card-edge-light):not(.card-spotlight){position:relative;z-index:1}
+#work .project-art{border-radius:7px}#work .project-bottom{margin-top:18px}
+#work .project-card>p{color:#57675d}#work .project-topline{font-size:8px}
+#work .filter-bar button{border:1px solid transparent;border-radius:7px;padding:9px 12px;transition:background .2s,border-color .2s}
+#work .filter-bar button.active,#work .filter-bar button:hover{border-color:#71988755;background:radial-gradient(ellipse at 50% 90%,#91bba32d,#ffffff18)}
+/* The global motion switch also remains reachable outside the 3D story. */
+.outside-story .motion-dock{opacity:1;pointer-events:auto}.outside-story .motion-dock .render-status{display:none}
+.outside-story .motion-dock>button{background:#101c22e8;color:#c9e3da;font-size:8px}
+@media(max-width:759px){.header .nav-mark{width:44px;height:44px}.header .nav-mark>svg{width:21px;height:21px}.nav-orbit-letters i{font-size:5.4px}.header .brand{gap:10px}.scene-vignette{background:linear-gradient(180deg,#080c1299 0%,#080c1240 44%,transparent 67%)}#work .filter-bar>div{gap:4px}#work .filter-bar button{padding:8px 7px}#work [data-card-light]{padding:11px}.about-section,.contact-section,.footer{background:rgba(8,12,18,.62)}.outside-story .motion-dock{right:12px;bottom:9px}}
+@media(prefers-reduced-motion:reduce){.nav-orbit-letters{animation:none}#work [data-card-light],#work [data-card-light]>.card-spotlight,#work [data-card-light]>.card-edge-light{transition:none}}
+@media print{.atmosphere-layer,.nav-orbit,.card-edge-light,.card-spotlight{display:none!important}.about-section,.contact-section,.footer{background:#fff!important}}

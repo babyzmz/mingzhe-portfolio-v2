@@ -1,0 +1,102 @@
+name: Publish owner-approved atmosphere update
+# One-off owner-approved release; regular Pages publication remains manual.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-approved-atmosphere.yml]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: approved-atmosphere-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'babyzmz/mingzhe-portfolio-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: babyzmz/mingzhe-portfolio-v2
+    steps:
+      - name: Guard the owner-approved main revision
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          parent=$(gh api "repos/$GH_REPO/commits/$GITHUB_SHA" --jq '.parents[0].sha')
+          test "$parent" = '5f2d854a4e0637a8dd31f3111f03a307683cbb17'
+          actual=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+          test "$actual" = "$GITHUB_SHA"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build exact expected assets
+        run: npm ci && npm run build
+      - name: Require fresh main atmosphere and previous-feature acceptance
+        run: |
+          set -euo pipefail
+          mkdir -p publication-evidence
+          for workflow in atmosphere-verify.yml local-sync-verify.yml ci.yml; do
+            id=''
+            for attempt in $(seq 1 60); do
+              id=$(gh run list --workflow "$workflow" --commit "$GITHUB_SHA" --event push --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+              if [ -n "$id" ]; then break; fi
+              sleep 5
+            done
+            test -n "$id"
+            echo "$workflow $id" >> publication-evidence/verification-runs.txt
+            gh run watch "$id" --exit-status --interval 5
+          done
+      - name: Publish via the existing Pages workflow
+        run: |
+          set -euo pipefail
+          actual=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+          test "$actual" = "$GITHUB_SHA"
+          gh workflow run pages.yml --ref main -f environment_name=github-pages
+          id=''
+          for attempt in $(seq 1 60); do
+            id=$(gh run list --workflow pages.yml --commit "$GITHUB_SHA" --event workflow_dispatch --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "$id"
+          echo "$id" > publication-evidence/pages-run.txt
+          gh run watch "$id" --exit-status --interval 5
+      - name: Verify live resources against the checked source revision
+        shell: python
+        run: |
+          import hashlib,json,os,pathlib,time,urllib.request
+          root=pathlib.Path('dist');base='https://babyzmz.github.io/mingzhe-portfolio-v2/';sha=os.environ['GITHUB_SHA']
+          expected={p.relative_to(root).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'assets').iterdir() if p.suffix in ['.css','.js']}
+          def get(path):
+              req=urllib.request.Request(base+path+'?verified='+sha,headers={'Cache-Control':'no-cache','User-Agent':'Portfolio-release-verifier'})
+              with urllib.request.urlopen(req,timeout=30) as response:
+                  assert response.status==200
+                  return response.read()
+          last=''
+          for attempt in range(24):
+              try:
+                  html=get('').decode()
+                  assets={name:get(name) for name in expected}
+                  for name,digest in expected.items():assert hashlib.sha256(assets[name]).hexdigest()==digest,name
+                  entry=[name for name in expected if name.endswith('.js') and 'data-card-light' in assets[name].decode()]
+                  assert len(entry)==1 and entry[0].split('/')[-1] in html,'old entrypoint'
+                  app=assets[entry[0]].decode()
+                  assert 'data-card-light' in app and 'data-circular-mark' in app and 'data-contact-stream' in app
+                  assert 'data-text-stream=' not in app
+                  assert get('documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').startswith(b'%PDF-')
+                  assert b'Dreambound Realm' in get('demos/dreambound/index.html')
+                  assert b'Commons Clause' in get('third-party/react-bits-license.txt')
+                  result={'verified':True,'revision':sha,'url':base,'bundle_sha256':expected,'pdf':200,'dreambound':200,'license':200,'checked_at_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+                  pathlib.Path('publication-evidence/live-result.json').write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2));break
+              except Exception as exc:
+                  last=str(exc);print('Waiting for verified live content:',last,flush=True);time.sleep(5)
+          else:raise RuntimeError(last)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: atmosphere-publication-evidence
+          path: publication-evidence/
+          retention-days: 14

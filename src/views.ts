@@ -11,6 +11,7 @@ export const esc=(s:string):string=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 export const arrow='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5"/></svg>';
 const down='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6" stroke="currentColor" stroke-width="1.4"/></svg>';
 const plus='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.4"/></svg>';
+const circularMark='<span class="nav-orbit" data-circular-mark aria-hidden="true"><span class="nav-orbit-letters">'+Array.from('MINGZHE · AI DEVELOPER · ').map((c,i,a)=>'<i style="--char-angle:'+i*360/a.length+'deg">'+c+'</i>').join('')+'</span></span>';
 const mark='<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 25V7l8 11 8-11v18M20 7h8L20 25h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 function art(p:Project):string{
  const kind=p.id;
@@ -48,7 +49,8 @@ export function card(p:Project,lang:Locale,index:number):string{
  const c=p[lang],t=text[lang];
  const grouped=linksByKind(p.id as ProjectId);
  const accessLabel=grouped.source.length?t.publicSource:grouped.record.length?t.record:t.private;
- return `<article class="project-card" data-project-card="${p.id}" data-kind="${p.kind}">
+ return `<article class="project-card" data-card-light data-project-card="${p.id}" data-kind="${p.kind}">
+ <span class="card-edge-light" aria-hidden="true"></span><span class="card-spotlight" aria-hidden="true"></span>
  <button class="project-art art-${p.id}${(!isSingleFileEdition()&&coverFor(p.id as ProjectId))?' has-real-cover':''}" data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}"><span class="art-index">${String(index+1).padStart(2,'0')}</span>${cardArt(p,lang)}<span class="art-open">${arrow}</span></button>
  <div class="project-topline"><span>${esc(c.category)}</span><span>${p.kind==='ai'?'↗':'↳'}</span></div><h3><button data-case="${p.id}">${esc(p.name)}</button></h3>
  <p>${esc(c.summary)}</p><div class="project-bottom"><span>${esc(accessLabel)}</span><button data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}">${plus}</button></div></article>`;
@@ -59,7 +61,7 @@ export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  const t=text[lang];
  const btn=(id:string,label=t.case)=>`<button class="text-button" data-case="${id}">${esc(label)}<span>${arrow}</span></button>`;
  return `<a class="skip-link" href="#work">${t.skip}</a>
- <header class="header"><a class="brand" href="#home" aria-label="Mingzhe Zhang — ${t.back}">${mark}<span>MINGZHE<span class="brand-dot">.</span></span></a>
+ <header class="header"><a class="brand" href="#home" aria-label="Mingzhe Zhang — ${t.back}"><span class="nav-mark">${circularMark}${mark}</span><span>MINGZHE<span class="brand-dot">.</span></span></a>
  <nav class="main-nav" aria-label="${lang==='en'?'Main navigation':'主导航'}"><a href="#work">${t.navWork}</a><a href="#method">${t.navMethod}</a><a href="#about">${t.navAbout}</a></nav>
  <div class="header-actions"><button class="language-toggle" data-locale aria-label="${lang==='en'?'Switch to Chinese':'切换为英文'}"><span class="${lang==='en'?'selected':''}">EN</span><i>/</i><span class="${lang==='zh'?'selected':''}">中</span></button><a class="contact-pill" href="#contact">${t.navContact}<span>↗</span></a><button class="menu-toggle" data-menu aria-label="${t.menu}" aria-expanded="false"><i></i><i></i></button></div></header>
  <main><div id="journey" class="journey">

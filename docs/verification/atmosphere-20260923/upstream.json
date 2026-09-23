@@ -1,0 +1,46 @@
+{
+  "repository": "DavidHDev/react-bits",
+  "commit": "c5df8610c0b47d7cd805cda480baba402f7267c1",
+  "files": [
+    {
+      "path": "src/ts-default/Backgrounds/DarkVeil/DarkVeil.css",
+      "sha256": "5e1658de28e5446be8d43c03d0db74a2a99798969cbdc1a921a1fecfe19f1112"
+    },
+    {
+      "path": "src/ts-default/Backgrounds/DarkVeil/DarkVeil.tsx",
+      "sha256": "4dc566884147b450c6ff5c0e8c5d3773a8beed3b0a9a5775bcb2954085bc5edd"
+    },
+    {
+      "path": "src/ts-default/Backgrounds/LightPillar/LightPillar.css",
+      "sha256": "20153c578ec10ecdab665e31f5e47a26edfa4b212787a34e2120257845b32731"
+    },
+    {
+      "path": "src/ts-default/Backgrounds/LightPillar/LightPillar.tsx",
+      "sha256": "a973c16a892d012a391fc2616ede3a1c9a041da672d536fbecc7e6a9c5da7771"
+    },
+    {
+      "path": "src/ts-default/Components/BorderGlow/BorderGlow.css",
+      "sha256": "c6b645f1ff163046b55246a6a4f98b47d75868f4879ef445f0a83b5636acc6b4"
+    },
+    {
+      "path": "src/ts-default/Components/BorderGlow/BorderGlow.tsx",
+      "sha256": "6c078469e66d0a1bdbcdcc0825499ef3e61ad0ba923b1c83d0bb5c72153bf493"
+    },
+    {
+      "path": "src/ts-default/Components/SpotlightCard/SpotlightCard.css",
+      "sha256": "d2e0a07a5b9edf383c74d7a3ee93d9e0c6cdfff21c861c67dca1ce88902d08f9"
+    },
+    {
+      "path": "src/ts-default/Components/SpotlightCard/SpotlightCard.tsx",
+      "sha256": "4539624fd2c8caeb8ded04dfa639a39c05c585bd5d63559ea525f5e13b1ee2f9"
+    },
+    {
+      "path": "src/ts-default/TextAnimations/CircularText/CircularText.css",
+      "sha256": "f5670d5e60f25fc290966e0a98438cd9341646503e42fe8b23e9236a00ddabac"
+    },
+    {
+      "path": "src/ts-default/TextAnimations/CircularText/CircularText.tsx",
+      "sha256": "3dc9853a47f21627f63ea983535ace84ba1ec44a512f04d1ae7882b83eb7caca"
+    }
+  ]
+}
