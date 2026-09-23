@@ -1,0 +1,50 @@
+name: Verify local-upload integration
+on:
+  push:
+    branches: [fix/sync-local-and-contact-20260923]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build both editions
+        run: |
+          npm run build:offline
+          npm run build
+      - name: Type and unit checks
+        run: npm test
+      - name: Integration checks
+        run: |
+          for file in tests/local-upload-parity.test.mjs tests/contact-stream.test.mjs tests/word-reveal.test.mjs; do
+            if [ -f "$file" ]; then node --test "$file"; fi
+          done
+      - name: Collect requested animation reference
+        continue-on-error: true
+        run: |
+          mkdir -p verification-artifacts
+          curl --fail --location --max-time 25 'https://www.rewampui.com/components/word-by-word-text' -o verification-artifacts/word-by-word-reference.html
+      - name: Package exact revision for inspection
+        if: always()
+        run: |
+          mkdir -p verification-artifacts
+          git archive --format=tar HEAD > verification-artifacts/source.tar
+          git rev-parse HEAD > verification-artifacts/revision.txt
+          if [ -d dist ]; then cp -R dist verification-artifacts/dist; fi
+          if [ -d node_modules ]; then tar -czf verification-artifacts/build-dependencies.tar.gz node_modules; fi
+          if [ -f Mingzhe-Portfolio-Preview.html ]; then cp Mingzhe-Portfolio-Preview.html verification-artifacts/; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-upload-verification
+          path: verification-artifacts/
+          retention-days: 7
