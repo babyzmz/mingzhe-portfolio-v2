@@ -18,10 +18,14 @@ jobs:
           base = 'https://www.rewampui.com/assets/'
           text = urllib.request.urlopen(base + 'ComponentsPage-DQnxaloO.js', timeout=30).read().decode()
           (root / 'components.js').write_text(text)
-          paths = set(re.findall(r'(?:assets/|\./)?(Word[^"\s/]+\.js)', text))
+          paths = set(re.findall(r'(Word[A-Za-z0-9_]+-[A-Za-z0-9_-]+\.js)', text))
           for name in paths:
-              (root / name).write_bytes(urllib.request.urlopen(base + name, timeout=30).read())
+              try:
+                  (root / name).write_bytes(urllib.request.urlopen(base + name, timeout=30).read())
+              except Exception as error:
+                  print(name, type(error).__name__)
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: animation-reference
           path: reference/
