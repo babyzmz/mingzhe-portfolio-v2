@@ -1,0 +1,19 @@
+/* Progressive enhancement: plain semantic content stays visible without JS. */
+[data-word-reveal] .word-token {display:inline-block; vertical-align:baseline;}
+[data-word-reveal].word-pending .word-token {opacity:0;}
+[data-fill] {--fill-primary:var(--cyan);}
+[data-fill="amber"] {--fill-primary:var(--amber);}
+[data-fill="neutral"] {--fill-primary:#9fb8c2;}
+[data-fill] .fill-char {--fill-dim:color-mix(in srgb,currentColor 22%,transparent);color:var(--fill-dim);transition:color .4s ease;}
+[data-fill] .fill-char.fill-in {color:inherit;animation:fill-sweep .5s ease both;}
+@keyframes fill-sweep {0%{color:var(--fill-dim);}30%{color:var(--fill-primary);}100%{color:inherit;}}
+html[data-motion="reduced"] [data-word-reveal] .word-token {opacity:1!important;transform:none!important;filter:none!important;}
+html[data-motion="reduced"] [data-fill] .fill-char {color:inherit;animation:none;transition:none;}
+@media(prefers-reduced-motion:reduce){
+ [data-word-reveal] .word-token {opacity:1!important;transform:none!important;filter:none!important;}
+ [data-fill] .fill-char {color:inherit!important;animation:none!important;transition:none!important;}
+}
+@media print {
+ [data-word-reveal] .word-token {opacity:1!important;transform:none!important;filter:none!important;}
+ [data-fill] .fill-char {color:inherit!important;animation:none!important;}
+}

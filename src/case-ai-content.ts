@@ -3,8 +3,8 @@ import type {CaseStudy} from './case-types.js';
 export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
   "fairy": {
     "zh": {
-      "tagline": "一个住在桌面上的 AI 助手，也是一套能处理项目与资料的工作空间。",
-      "purpose": "Fairy 不只是一个会动的桌宠。我希望它既能以有形象的方式陪伴用户，也能完成实际工作：对话、检索文档资料、调用工具、展示任务进展和预览生成的文件。它以 Windows 桌面为主要形态，把普通聊天和围绕某个项目的工作分开组织。",
+      "tagline": "以成为个人终端的智能助手为目标，将对话、资料检索与受控工具操作融入日常工作。",
+      "purpose": "Fairy 的目标是成为个人终端上的智能助手，而不只是一个会动的桌宠。当前以 Windows 桌面为主要形态，围绕对话、文档资料、受控工具操作、任务进展和文件预览持续开发；普通聊天与项目工作分别组织，桌宠和语音是交互入口，而不是产品的全部。",
       "audience": "适合希望在电脑上把 AI 对话、资料和项目任务放在一起使用的人，而不只是打开一个独立聊天网页。",
       "scenario": "“围绕这个项目里的资料回答我的问题，把需要的工具步骤和生成的文件留在同一个工作区。”",
       "workflowNote": "下面根据项目文档说明使用逻辑，是流程示意，不是原生应用实测录屏；具体能力取决于模型、工具配置及当前版本。",
@@ -88,8 +88,8 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
       ]
     },
     "en": {
-      "tagline": "A desktop presence with a practical workspace for AI, projects and documents.",
-      "purpose": "Fairy is more than an animated desktop pet. The project brings conversation, document retrieval, tools, task activity and file previews into a Windows-first application. General chat and project-scoped work are kept separate so the assistant can have both a recognisable presence and a practical place in a workflow.",
+      "tagline": "Building an intelligent assistant for personal devices, bringing conversations, document retrieval and controlled tool use into everyday work.",
+      "purpose": "Fairy aims to become an intelligent assistant on personal devices, not just an animated desktop pet. Current development centres on Windows: conversations, documents, controlled tool use, task progress and file previews. Ordinary chat and project work are organised separately; the companion appearance and voice are ways to interact, rather than the entire product.",
       "audience": "For people who want AI conversations, reference documents and project work together on their computer, rather than only in a separate chat page.",
       "scenario": "“Help me work with the documents in this project. Keep the conversation, tool steps and resulting files in the same workspace.”",
       "workflowNote": "This is an illustrative walkthrough based on project documentation, not a recorded native-app test. Available behaviour depends on model, tool configuration and version.",
@@ -179,7 +179,7 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
       "purpose": "MojoCore 是 MojoClaw 和 MojoAX 共用的后端基础，不是给普通用户单独打开的第三个聊天软件。两个工作台需要模型、工具、文件、任务与状态恢复；把这些共享能力放在 Core，界面就不用各自维护一套相互冲突的执行逻辑。",
       "audience": "直接服务于 MojoClaw、MojoAX 这样的应用及其开发过程。普通用户通过工作台使用它，而不是直接操作 Core。",
       "scenario": "“一个任务进行到一半，我刷新页面再回来：它应该继续显示真实进展，而不是重新开始或永远转圈。”",
-      "workflowNote": "下面是持久化任务设计的示意，用来解释开发目标与职责分工，不是一次端到端运行测试或性能承诺。",
+      "workflowNote": "依据本机源码核对的任务生命周期示意：创建请求 → 持久化事件 → 流式展示 → 取消或恢复。它解释实现结构，不代表本次执行了一次真实模型任务。",
       "workflow": [
         {
           "title": "接收同一个任务",
@@ -204,8 +204,8 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "把模型接入、工具、知识资料和生成物等共同能力留在核心层，产品界面通过约定的接口消费。"
         },
         {
-          "title": "持久化任务",
-          "body": "任务不只活在一次浏览器请求里。开发工作包括保存任务标识与状态，让中断后的恢复有依据。"
+          "title": "持久化任务与事件游标",
+          "body": "网关将任务和事件写入 PostgreSQL；事件带有递增序号，客户端可以从上次读取的位置继续重放，将刷新后的恢复和实时 SSE 连接到同一份执行记录。"
         },
         {
           "title": "事件重放与流式响应",
@@ -216,12 +216,16 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "取消不是简单隐藏加载图标；系统要记录任务已取消，并防止之后的回调把状态悄悄改回去。"
         },
         {
-          "title": "重复请求与用户边界",
-          "body": "同一请求重试时要能识别；读取、取消和恢复任务时也必须核验身份，避免跨用户访问。"
+          "title": "幂等请求与身份校验",
+          "body": "请求携带幂等键；重复提交会核对请求内容与身份，冲突返回明确错误。任务事件按租户与任务读取，避免重试产生重复执行或跨身份复用。"
         },
         {
           "title": "可检查的接口约定",
           "body": "通过契约与冒烟检查关注接口形状、代理边界和失败处理。这里不把检查文件的存在当作整套系统已上线。"
+        },
+        {
+          "title": "统一终态与结果投影",
+          "body": "成功、失败、取消和超时以持久化终态事件为依据。网关核对事件类型与状态的一致性，并将记录投影为前端可恢复的任务状态。"
         }
       ],
       "development": "我的开发工作集中在共享运行能力、任务生命周期、恢复与接口检查。我借助 AI coding agent 读取相关模块、拆解改动、处理实现，再根据状态和接口的实际表现持续纠偏。",
@@ -256,6 +260,10 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         {
           "title": "SSE / 流式事件",
           "body": "服务器持续把进展发给浏览器，让用户逐步看到执行结果。"
+        },
+        {
+          "title": "事件游标 / afterSeq",
+          "body": "标记已经读到哪一条事件。重新连接时从该位置继续获取记录，减少重复内容。"
         }
       ]
     },
@@ -264,7 +272,7 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
       "purpose": "MojoCore is the shared foundation for MojoClaw and MojoAX, not a third end-user chat application. Both workbenches need models, tools, artifacts, tasks and recovery. Keeping these responsibilities in Core prevents each interface from inventing its own execution logic.",
       "audience": "Consumed by applications such as MojoClaw and MojoAX. End users experience its behaviour through those workbenches rather than opening Core directly.",
       "scenario": "“I refresh the page halfway through a task. When I return, show its real progress instead of starting it again or leaving a spinner running forever.”",
-      "workflowNote": "This illustrative sequence explains persistent-task responsibilities and development goals. It is not an end-to-end test result or a performance guarantee.",
+      "workflowNote": "A source-reviewed illustrative lifecycle: request creation → persisted events → streaming display → cancellation or recovery. This explains the implementation; no live model run was executed in this review.",
       "workflow": [
         {
           "title": "Identify the request",
@@ -289,8 +297,8 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "Common model, tool, knowledge and artifact capabilities sit behind Core interfaces consumed by the product shells."
         },
         {
-          "title": "Persistent tasks",
-          "body": "Work on task identifiers and saved states gives recovery something more dependable than an in-flight browser request."
+          "title": "Durable runs and event cursors",
+          "body": "The gateway persists runs and events in PostgreSQL. Ordered event sequences let clients resume replay from a cursor, connecting refresh recovery and live SSE to the same execution record."
         },
         {
           "title": "Streaming and event replay",
@@ -301,12 +309,16 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "Cancelling is more than removing a spinner. The system records the outcome and protects it from conflicting later callbacks."
         },
         {
-          "title": "Duplicate requests and identity boundaries",
-          "body": "Retries need recognition. Reading, cancelling and restoring a task also require verified identity rather than trusting client-supplied ownership."
+          "title": "Idempotency and identity checks",
+          "body": "An idempotency key is checked against request content and identity; conflicting reuse produces an explicit error. Event reads are scoped by tenant and run instead of treating retries as new work."
         },
         {
           "title": "Checkable contracts",
           "body": "Contract and smoke checks focus on interface shapes, proxy boundaries and failure behaviour. Test-file presence is not a production release claim."
+        },
+        {
+          "title": "Consistent terminal events",
+          "body": "Success, failure, cancellation and timeout are represented by persisted terminal events. The gateway checks event/status consistency and projects the record into recoverable task state."
         }
       ],
       "development": "My work focuses on shared runtime capabilities, task lifecycle, recovery and interface checks. I use AI coding agents to inspect the relevant modules, break down changes and implement them, then refine the result against observed state and interface behaviour.",
@@ -341,17 +353,21 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         {
           "title": "SSE",
           "body": "Server-sent events: a stream of progress updates from the server to the browser."
+        },
+        {
+          "title": "Event cursor / afterSeq",
+          "body": "The last event sequence a client has read. Reconnection can continue from this position rather than repeating the entire stream."
         }
       ]
     }
   },
   "claw": {
     "zh": {
-      "tagline": "给个人使用的 AI 工作台：把聊天、项目任务和生成文件放在一起。",
-      "purpose": "MojoClaw 面向个人日常使用。它的重点不是单纯“能和模型聊天”，而是在同一个工作空间里组织会话、项目、任务和结果，让用户既能提出要求，也能跟踪过程并打开生成的文件。",
+      "tagline": "面向个人用户的 AI SaaS 服务，通过网页与桌面工作台组织对话、项目任务和生成文件。",
+      "purpose": "MojoClaw 面向个人用户，以 AI SaaS 服务为产品方向，提供网页与桌面两种入口。我希望用户不只获得一次聊天回答，而是能在工作台里组织对话、项目任务和生成文件。共享能力与执行状态由 MojoCore 承担，网页和桌面端负责呈现和交互；这一定位不代表订阅计费或所有服务已正式上线。",
       "audience": "需要用 AI 处理个人项目、资料与内容工作的用户。界面希望保持清晰，不把企业级信息密度直接搬给个人。",
       "scenario": "“这次工作不要只留下一段回答：把讨论、任务进展和生成文件放在同一个项目里，之后还能回来继续。”",
-      "workflowNote": "这是工作台用途与流程示意，依据简历和项目文档整理；不代表当前已验证的公网会话或每一项操作均已发布。",
+      "workflowNote": "依据当前 Web、Electron 与共享任务状态代码整理的流程示意；本次核对实现，不将它表述为已录制的真实模型会话。",
       "workflow": [
         {
           "title": "围绕事情组织会话",
@@ -380,8 +396,8 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "在工作台中承接 Core 返回的生成物与预览，区分会话内容和文件结果。"
         },
         {
-          "title": "流式反馈与恢复",
-          "body": "跟随 Core 展示执行进度，并围绕取消、重新进入会话和历史载入持续迭代。"
+          "title": "有序事件与会话恢复",
+          "body": "Web 复用桌面端共享的持久化任务状态逻辑，以 Core 的消息标识和事件序号合并内容。恢复时区分历史快照与新事件，避免旧状态覆盖当前任务。"
         },
         {
           "title": "有边界的前后端集成",
@@ -390,6 +406,10 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         {
           "title": "面向实际故障的迭代",
           "body": "开发经历包括认证、模型供应商错误和聊天流程排查；失败信息需要解释真正的问题，而不是统一显示“模型不可用”。"
+        },
+        {
+          "title": "HTML 生成物预览",
+          "body": "专门的 HTML 预览逻辑承接生成页面，让文件结果与聊天内容分开阅读；预览可用性仍取决于 Core 返回的实际生成物。"
         }
       ],
       "development": "我借助 Codex、Claude 推进项目／任务界面、Core API 接入和交互迭代，并结合日志、聊天链路与针对性检查排查问题。相比只展示页面，我更关注界面能否表达任务实际发生的状态。",
@@ -405,6 +425,10 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         {
           "title": "把问题写成可复现任务",
           "body": "将具体的会话恢复、认证或预览问题，拆成触发步骤、预期状态和检查范围，再交给 coding agent 修改。"
+        },
+        {
+          "title": "共享状态逻辑，保留产品交互",
+          "body": "Web 与桌面复用任务状态和消息排序模块，减少各端对同一事件作出不同解释；移动端是否具备同等体验需要单独验收。"
         }
       ],
       "relationship": "MojoClaw 与 MojoAX 共享 MojoCore，但面向的使用者与信息组织不同。前者是个人工作台，后者强调团队与业务场景；这里不暗示所有终端已经功能完全一致。",
@@ -424,11 +448,11 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
       ]
     },
     "en": {
-      "tagline": "A personal AI workbench for conversations, project tasks and the files they produce.",
-      "purpose": "MojoClaw is aimed at individual use. Its focus extends beyond chatting with a model: conversations, projects, tasks and outputs belong in one workspace so users can make a request, follow the process and inspect generated files.",
+      "tagline": "An AI SaaS service for individuals, bringing conversations, project tasks and generated files together across web and desktop workspaces.",
+      "purpose": "MojoClaw is being developed as an AI SaaS service for individuals, with web and desktop entry points. The aim is to organise conversations, project tasks and generated files in a workbench, rather than stopping at a single chat response. MojoCore owns shared capabilities and execution state; the product clients present the work and its controls. This positioning does not imply that subscriptions or every service are already publicly launched.",
       "audience": "People using AI for personal projects, documents and content work. The interface is intended to stay focused rather than inherit enterprise-level information density.",
       "scenario": "“Keep the discussion, task progress and generated files together in this project so I can come back and continue the work.”",
-      "workflowNote": "This is an illustrative explanation based on the CV and project documentation, not a verified hosted session or a claim that every operation has shipped.",
+      "workflowNote": "An illustrative workflow reviewed against the current Web, Electron and shared task-state code. This is an implementation explanation, not a recorded live model session.",
       "workflow": [
         {
           "title": "Organise the conversation",
@@ -457,8 +481,8 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "Present artifacts and previews returned by Core while distinguishing file outputs from chat text."
         },
         {
-          "title": "Streaming and restoration",
-          "body": "Show execution updates and iterate on cancellation, reopened conversations and historical state."
+          "title": "Ordered events and conversation recovery",
+          "body": "The Web client reuses the desktop shared durable-run logic. Core message identities and event sequences guide merging, separating historical snapshots from new events so stale state does not overwrite current work."
         },
         {
           "title": "Bounded frontend/backend integration",
@@ -467,6 +491,10 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         {
           "title": "Failure-led iteration",
           "body": "Development includes authentication, provider-error and chat-flow investigation so failures describe the actual problem."
+        },
+        {
+          "title": "HTML artifact previews",
+          "body": "Dedicated HTML preview handling presents generated pages separately from chat. A usable preview still depends on an actual artifact returned by Core."
         }
       ],
       "development": "I use Codex and Claude to develop project/task interfaces, integrate Core APIs and iterate on interactions. Logs, chat-flow reproduction and focused checks guide debugging. The aim is not only a polished screen, but one that represents actual task state.",
@@ -482,6 +510,10 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         {
           "title": "Make faults reproducible",
           "body": "Translate restoration, authentication and preview problems into steps, expected state and a bounded change for the coding agent."
+        },
+        {
+          "title": "Shared state logic across interfaces",
+          "body": "Web and desktop reuse durable-run and message-ordering modules to reduce conflicting interpretations of the same event. Mobile parity requires its own acceptance checks."
         }
       ],
       "relationship": "MojoClaw and MojoAX share MojoCore but differ in audience and information organisation. This does not imply every desktop, web or mobile surface has verified feature parity.",
@@ -507,7 +539,7 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
       "purpose": "MojoAX 关注团队和组织使用 AI 的场景。除了回答一个问题，业务工作还涉及资料、文件、执行过程和审查。它以工作台承接这些信息，让当前任务需要的界面出现，而不是一开始就把所有工具铺满屏幕。",
       "audience": "围绕业务任务使用 AI 的团队与组织。它与 MojoClaw 的个人使用场景有意区分，并不等于一套已经完整交付的 ERP。",
       "scenario": "“处理一项资料型业务任务时，让我看到当前用了什么资料、正在做哪一步，以及最后产出了什么文件。”",
-      "workflowNote": "这是根据工作台设计说明整理的用途示意，不是已部署客户案例。审批、身份与其他企业集成的可用性须按实际模块核验。",
+      "workflowNote": "根据当前工作台和 Core 接入代码整理的流程示意，不是客户部署案例。本次核对界面控制与接口调用，未复测外部身份提供商、计费或企业业务全链路。",
       "workflow": [
         {
           "title": "提出有上下文的业务任务",
@@ -523,13 +555,13 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         },
         {
           "title": "检查过程和结果",
-          "body": "对执行过程与生成文件提供可阅读的位置。企业审批和其他接入仍需区分已连接、占位和未验证状态。"
+          "body": "在任务进度、工具活动和生成物面板中检查工作；需要组织身份时，通过 Core 获取租户列表和切换结果。外部企业服务的实际可用性仍需独立验收。"
         }
       ],
       "capabilities": [
         {
-          "title": "按任务出现的工作界面",
-          "body": "仓库描述了按需工作面板的设计。浏览器、文件、代码、生成物等界面围绕当前工作组织，而不是全屏同时堆放。"
+          "title": "自动召唤、固定与分屏",
+          "body": "Surface 控制器根据工具活动选择工作面板；用户可以固定当前面板或打开第二个面板。自动切换尊重固定状态，让阅读中的文件保持稳定。"
         },
         {
           "title": "企业侧的信息层级",
@@ -544,8 +576,12 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "把任务步骤、工具调用和结果界面连接起来，帮助使用者理解 AI 正在做什么；不把示意面板当成真实运行数据。"
         },
         {
-          "title": "明确未完成的企业能力",
-          "body": "仓库同时记录了企业接入中的占位与迁移内容。单点登录、多租户及各连接器不能仅凭界面存在就被写成全面可用。"
+          "title": "SSO 与租户切换接入",
+          "body": "当前控制器已接入 Core 的身份会话与租户接口：登录回调、会话刷新、组织列表和组织切换由界面协调，身份验证与租户事实仍由 Core 管理。"
+        },
+        {
+          "title": "明确的加载与失败状态",
+          "body": "租户控制器在服务响应前保留空白或加载状态，失败时显示错误，不在前端虚构一个已登录组织。接口接入与外部服务验收分别说明。"
         }
       ],
       "development": "我使用 AI 辅助开发企业工作台界面、接入共享服务，并把业务系统需求转成可实施的界面与集成任务。我的重点是信息如何出现、任务如何表达，以及界面如何和 Core 的状态保持一致。",
@@ -559,8 +595,8 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "企业工作台负责自己的交互与信息架构；共享模型、工具和执行能力通过 Core 接入，避免产品之间互相复制。"
         },
         {
-          "title": "不把占位结构当作交付",
-          "body": "区分页面已经接线、外部服务已经联通和完整业务流程已经验收。只有证据支持的层级才写成完成。"
+          "title": "用代码核对接入进度",
+          "body": "旧设计中的占位说明可能已过时。核对实际控制器与 Core 调用后更新介绍，同时保留源码接入、服务联通和完整业务验收之间的区别。"
         }
       ],
       "relationship": "MojoAX 是企业工作台，MojoClaw 是个人工作台，MojoCore 为两者提供共享能力。企业侧差异主要体现在信息组织、工作情境与治理需求，而不是凭空多出一套独立 AI 引擎。",
@@ -575,7 +611,7 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         },
         {
           "title": "SSO / 多租户",
-          "body": "单点登录与多个组织的数据／身份边界。存在接口或占位不表示完整能力已验收。"
+          "body": "SSO 统一登录身份，多租户区分组织与访问范围。工作台调用 Core 管理这些状态；外部身份提供商和部署配置仍影响真实可用性。"
         }
       ]
     },
@@ -584,7 +620,7 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
       "purpose": "MojoAX explores AI work for teams and organisations. Business tasks involve reference material, files, execution and review as well as answers. The workbench organises those elements around current activity instead of filling the screen with every tool at once.",
       "audience": "Teams working with AI in a business context. The enterprise-facing experience is deliberately distinct from MojoClaw and is not presented as a fully delivered ERP.",
       "scenario": "“For this document-based business task, show the material being used, the current step and the files produced at the end.”",
-      "workflowNote": "An illustrative workflow drawn from the documented workbench design, not a deployed customer case. Approval, identity and enterprise integrations need module-specific verification.",
+      "workflowNote": "An illustrative workflow based on current workbench and Core integration code, not a customer deployment. This review inspected controllers and API calls; it did not exercise external identity providers, billing or complete enterprise workflows.",
       "workflow": [
         {
           "title": "Give the task context",
@@ -599,14 +635,14 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "The product adapter connects shared capabilities while the enterprise shell keeps its own workflow and information hierarchy."
         },
         {
-          "title": "Review activity and output",
-          "body": "Execution steps and generated files have a readable place. Connected, scaffolded and unverified enterprise features remain distinct."
+          "title": "Inspect progress and results",
+          "body": "Review task progress, tool activity and artifacts. Organisation-aware work obtains tenant lists and switching results from Core; external enterprise service readiness needs separate acceptance."
         }
       ],
       "capabilities": [
         {
-          "title": "Task-relevant surfaces",
-          "body": "The repository describes an on-demand surface design for browser, files, code and artifacts, rather than a permanent wall of panels."
+          "title": "Automatic surfaces, pinning and split view",
+          "body": "The Surface controller selects a view from tool activity. Users can pin the current view or open a secondary pane; automatic selection respects pinning so a file remains stable while being read."
         },
         {
           "title": "Enterprise information hierarchy",
@@ -621,8 +657,12 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "Task steps, tool activity and result views help explain the work. An illustrative panel is not live operational evidence."
         },
         {
-          "title": "Explicit unfinished integrations",
-          "body": "The documentation also identifies enterprise scaffolds and migration work. SSO, tenancy and connectors are not declared complete just because a surface exists."
+          "title": "SSO and tenant integration",
+          "body": "Current controllers connect identity sessions and tenant operations to Core: the UI coordinates login callbacks, session refresh, organisation lists and switching, while Core owns authentication and tenant state."
+        },
+        {
+          "title": "Explicit loading and failure states",
+          "body": "Before the gateway responds, the tenant controller retains empty or loading states and reports failures rather than inventing a signed-in organisation. API wiring and external-service acceptance are tracked separately."
         }
       ],
       "development": "I use AI-assisted development to build enterprise workbench interfaces, connect shared services and translate business-system requirements into implementation tasks. My focus is how information appears, how tasks are expressed and how the product stays consistent with Core state.",
@@ -636,8 +676,8 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "The enterprise shell owns interaction and information architecture. Shared model, tool and execution capabilities are consumed through Core."
         },
         {
-          "title": "Do not equate scaffolding with delivery",
-          "body": "A wired screen, a connected external service and an accepted end-to-end workflow are different levels of completion."
+          "title": "Check implementation against older plans",
+          "body": "Placeholder descriptions can become stale. Inspect current controllers and Core calls before updating claims, and distinguish source integration, service connectivity and full workflow acceptance."
         }
       ],
       "relationship": "MojoAX is the enterprise workbench, MojoClaw the personal workbench and MojoCore their shared capability foundation. The distinction concerns workflow, information and governance needs, not an invented separate AI engine.",
@@ -652,7 +692,7 @@ export const aiCases: Record<string, Record<Locale, CaseStudy>> = {
         },
         {
           "title": "SSO / multi-tenancy",
-          "body": "Single sign-on and organisational identity/data boundaries. An interface or scaffold is not evidence of completed acceptance."
+          "body": "SSO unifies sign-in; multi-tenancy separates organisations and access. The workbench calls Core to manage these states, while external identity providers and deployment configuration determine real availability."
         }
       ]
     }
