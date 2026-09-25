@@ -274,6 +274,68 @@ html[data-ambient-motion='paused'] .nav-orbit-letters,html[data-motion='reduced'
 @media(prefers-reduced-motion:reduce){.nav-orbit-letters{animation:none}#work [data-card-light],#work [data-card-light]>.card-spotlight,#work [data-card-light]>.card-edge-light{transition:none}}
 @media print{.atmosphere-layer,.nav-orbit,.card-edge-light,.card-spotlight{display:none!important}.about-section,.contact-section,.footer{background:#fff!important}}
 </style>
+<style>/* Mobile reading protection for the stacked 3D story only.
+   No copy/layout/camera changes: desktop starts at 760px in responsive.css.
+   These copies already have position:relative and z-index:2. Keeping the
+   mask on the pseudo-element, not the copy, leaves text and links unfiltered.
+   Dark tint remains useful without backdrop-filter. No animated blur. */
+@media screen and (max-width: 759px) {
+  #journey :is(.hero-copy, .chapter-copy) {
+    --mobile-reading-shield: 1;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, .38);
+  }
+
+  #journey :is(.hero-copy, .chapter-copy)::before {
+    content: "";
+    position: absolute;
+    inset: -40px -24px -64px;
+    z-index: -1;
+    pointer-events: none;
+    border: 0;
+    border-radius: 24px;
+    /* The unmasked fallback also fades out towards the visible model. */
+    background: linear-gradient(180deg,
+      rgba(8, 12, 18, .84) 0%,
+      rgba(8, 12, 18, .78) 55%,
+      rgba(8, 12, 18, .72) 88%,
+      rgba(8, 12, 18, 0) 100%);
+  }
+
+  /* Feather in the extra inset, not over the first/last lines or buttons.
+     Safari's source-in and standard intersect combine the two fade axes. */
+  @supports ((mask-image: linear-gradient(black, transparent)) and
+             (mask-composite: intersect)) or
+            ((-webkit-mask-image: linear-gradient(black, transparent)) and
+             (-webkit-mask-composite: source-in)) {
+    #journey :is(.hero-copy, .chapter-copy)::before {
+      border-radius: 0;
+      background: linear-gradient(180deg,
+        rgba(8, 12, 18, .84) 0%,
+        rgba(8, 12, 18, .78) 55%,
+        rgba(8, 12, 18, .72) 100%);
+      -webkit-mask-image:
+        linear-gradient(180deg, transparent, #000 40px, #000 calc(100% - 64px), transparent),
+        linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+      mask-image:
+        linear-gradient(180deg, transparent, #000 40px, #000 calc(100% - 64px), transparent),
+        linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+      -webkit-mask-composite: source-in;
+      mask-composite: intersect;
+      /* Progressive enhancement; the dark gradient is the contrast floor. */
+      -webkit-backdrop-filter: blur(10px) saturate(.85);
+      backdrop-filter: blur(10px) saturate(.85);
+    }
+  }
+
+  #journey :is(.hero-description, .chapter-desc) { color: #becad3; }
+  #journey .chapter-copy .silver-text { color: #aebcc9; }
+  #journey .core-features > span { color: #bfd0d0; }
+  #journey .feature-tags span { color: #b9cecf; }
+  #journey :is(.status-line, .quiet-link) { color: #a8c3bb; }
+  #journey .boundary-note { color: #8ea8b0; }
+  #journey .workbench-links small { color: #a9bdc4; }
+}
+</style>
 </head>
 <body>
 <!-- React Bits adaptations used within this website.

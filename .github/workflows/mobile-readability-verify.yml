@@ -1,0 +1,52 @@
+name: Verify mobile story readability
+on:
+  push:
+    branches: [main]
+    paths: ['styles/**', 'src/**', 'tests/**', 'scripts/**', 'index.html', 'package*.json', '.github/workflows/mobile-readability-verify.yml']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build and test both editions
+        run: |
+          npm run build:offline
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Install Chromium and WebKit
+        run: |
+          python -m pip install playwright==1.57.0 pillow==11.3.0
+          python -m playwright install --with-deps chromium webkit
+      - name: Chromium WebGL and mobile interactions
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
+        run: python tests/mobile-readability.browser.py
+      - name: WebKit mobile reading and interactions
+        env:
+          READABILITY_ENGINE: webkit
+        run: python tests/mobile-readability.browser.py
+      - name: Record tested source revision
+        if: always()
+        run: |
+          mkdir -p test-artifacts
+          git rev-parse HEAD > test-artifacts/mobile-readability-revision.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-readability-main
+          path: test-artifacts/mobile-readability*
+          retention-days: 7

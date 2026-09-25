@@ -1,0 +1,107 @@
+name: Publish owner-approved mobile reading update
+# One-off, explicitly requested publication. Regular Pages remains manual.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-approved-mobile-readability.yml]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: approved-mobile-readability-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'babyzmz/mingzhe-portfolio-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: babyzmz/mingzhe-portfolio-v2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Confirm approved revision and protected content
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/main'
+          test "$(git rev-parse HEAD^)" = 'a6e1f9e188ab57100b53f86733273f0d0c6b9733'
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')" = "$GITHUB_SHA"
+          git diff --exit-code HEAD^ HEAD -- src/ public/ package.json package-lock.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build exact expected assets
+        run: |
+          npm ci
+          npm run build:offline
+          git diff --exit-code -- Mingzhe-Portfolio-Preview.html
+          npm run build
+      - name: Require fresh checks on the same main revision
+        run: |
+          set -euo pipefail
+          mkdir -p publication-evidence
+          for workflow in mobile-readability-verify.yml atmosphere-verify.yml local-sync-verify.yml ci.yml; do
+            id=''
+            for attempt in $(seq 1 60); do
+              id=$(gh run list --workflow "$workflow" --commit "$GITHUB_SHA" --event push --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+              if [ -n "$id" ]; then break; fi
+              sleep 5
+            done
+            test -n "$id"
+            echo "$workflow $id" >> publication-evidence/verification-runs.txt
+            gh run watch "$id" --exit-status --interval 5
+          done
+      - name: Publish using existing Pages workflow
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')" = "$GITHUB_SHA"
+          gh workflow run pages.yml --ref main -f environment_name=github-pages
+          id=''
+          for attempt in $(seq 1 60); do
+            id=$(gh run list --workflow pages.yml --commit "$GITHUB_SHA" --event workflow_dispatch --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "$id"
+          echo "$id" > publication-evidence/pages-run.txt
+          gh run watch "$id" --exit-status --interval 5
+      - name: Verify exact deployed stylesheet, scripts and unchanged resume
+        shell: python
+        run: |
+          import hashlib,json,os,pathlib,time,urllib.request
+          root=pathlib.Path('dist');base='https://babyzmz.github.io/mingzhe-portfolio-v2/';sha=os.environ['GITHUB_SHA']
+          expected={p.relative_to(root).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'assets').iterdir() if p.suffix in ['.css','.js']}
+          pdf='documents/Mingzhe_Zhang_AI_Developer_Resume.pdf'
+          pdf_hash=hashlib.sha256((root/pdf).read_bytes()).hexdigest()
+          assert pdf_hash=='78b54fa878d449b75bad5d8020b35a8ce0cba2752567108fc7f0a0257939c761'
+          def get(path):
+              req=urllib.request.Request(base+path+'?verified='+sha,headers={'Cache-Control':'no-cache','User-Agent':'Portfolio-release-verifier'})
+              with urllib.request.urlopen(req,timeout=30) as response:
+                  assert response.status==200
+                  return response.read()
+          for attempt in range(24):
+              try:
+                  html=get('').decode()
+                  assets={name:get(name) for name in expected}
+                  for name,digest in expected.items():assert hashlib.sha256(assets[name]).hexdigest()==digest,name
+                  styles=[name for name in expected if name.endswith('.css')]
+                  assert len(styles)==1 and styles[0].split('/')[-1] in html
+                  assert '--mobile-reading-shield' in assets[styles[0]].decode()
+                  assert '759px' in assets[styles[0]].decode()
+                  assert hashlib.sha256(get(pdf)).hexdigest()==pdf_hash
+                  assert b'Dreambound Realm' in get('demos/dreambound/index.html')
+                  result={'verified':True,'revision':sha,'url':base,'bundle_sha256':expected,'pdf_sha256':pdf_hash,'dreambound':200,'checked_at_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+                  pathlib.Path('publication-evidence/live-result.json').write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2));break
+              except Exception as exc:
+                  print('Waiting for verified live content:',str(exc),flush=True)
+                  if attempt==23:raise
+                  time.sleep(5)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-readability-publication-evidence
+          path: publication-evidence/
+          retention-days: 14
