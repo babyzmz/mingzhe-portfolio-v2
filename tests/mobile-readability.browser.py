@@ -16,6 +16,7 @@ OUT = Path(os.environ.get('READABILITY_OUTPUT', str(ROOT/'test-artifacts'/'mobil
 OUT.mkdir(parents=True, exist_ok=True)
 SECTIONS = ['home', 'fairy', 'core', 'mojo', 'method']
 checks, errors, servers = [], [], []
+completed = False
 
 def check(name, value):
     checks.append({'name': name, 'passed': bool(value)})
@@ -51,6 +52,25 @@ def freeze(page):
 def geometry(page, section):
     return copy(page, section).evaluate('''e => [e,...e.querySelectorAll('h1,h2,p,a,button')].map(n => {
       const b=n.getBoundingClientRect();return [b.x,b.y,b.width,b.height].map(v=>Math.round(v*100)/100)})''')
+
+def stable_screenshot(page, label):
+    # Paused scenes still need asynchronous scroll/paint to settle. Require
+    # consecutive equal frames, then compare old/new with zero tolerance.
+    previous = None
+    equal_frames = 0
+    for attempt in range(15):
+        current = page.screenshot()
+        if current == previous:
+            equal_frames += 1
+            if equal_frames >= 2:
+                (OUT/(label+'.png')).write_bytes(current)
+                return current
+        else:
+            equal_frames = 0
+        previous = current
+        page.wait_for_timeout(150)
+    (OUT/(label+'-unstable.png')).write_bytes(current)
+    raise AssertionError('Paused rendering did not settle: '+label)
 
 def load(page, url):
     if OFFLINE:
@@ -96,7 +116,6 @@ try:
                           and 'linear-gradient' in result['mask'] and '10px' in result['blur']
                           and result['filter']=='none' and result['opacity']=='1' and result['active'].strip()=='1')
                 check(f'{width}/{lang}: no horizontal overflow', page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
-        # Phone-sized chapter screenshots, then actual tap/close paths.
         page.set_viewport_size({'width':430,'height':844})
         if page.locator('html').get_attribute('lang')!='en': page.locator('[data-locale]').click()
         for section in SECTIONS:
@@ -117,13 +136,11 @@ try:
         page.locator('[data-locale]').tap();jump(page,'core')
         page.screenshot(path=str(OUT/'core-mobile-zh.png'))
         page.locator('[data-locale]').tap()
-        # Real full-motion transition and reverse scroll, not only paused captures.
         page.locator('button[data-motion]').click()
         for section in ['fairy','core','mojo','core']:
             jump(page,section);page.wait_for_timeout(500)
             check(f'active/reverse scroll {section}: shield follows copy',copy(page,section).evaluate("e=>getComputedStyle(e,'::before').content")=='""')
         freeze(page)
-        # Desktop has no generated pseudo-element or altered text styling.
         for width in [760, 900, 1440]:
             page.set_viewport_size({'width':width,'height':960})
             for section in SECTIONS:
@@ -133,7 +150,6 @@ try:
             jump(page,section)
             check(f'{section}: no reading shield outside 3D journey',page.locator('#'+section).evaluate("e=>getComputedStyle(e).getPropertyValue('--mobile-reading-shield')")== '')
         check('corrected footer and all project cards preserved',page.locator('[data-contact-stream]').count()==1 and page.locator('[data-project-card]').count()==9)
-        # Deterministic, fresh paused contexts for exact old/new comparison.
         if base_url:
             old_context=browser.new_context(viewport={'width':1440,'height':960},device_scale_factor=1)
             new_context=browser.new_context(viewport={'width':1440,'height':960},device_scale_factor=1)
@@ -145,23 +161,25 @@ try:
                 for q in [old,new]:q.set_viewport_size({'width':width,'height':960})
                 for section in SECTIONS:
                     for q in [old,new]:jump(q,section)
+                    before=stable_screenshot(old,f'desktop-{width}-{section}-before')
+                    after=stable_screenshot(new,f'desktop-{width}-{section}-after')
                     check(f'baseline {width}/{section}: identical copy and button geometry',geometry(old,section)==geometry(new,section))
-                    before=old.screenshot();after=new.screenshot()
                     diff=ImageChops.difference(Image.open(io.BytesIO(before)).convert('RGB'),Image.open(io.BytesIO(after)).convert('RGB'))
+                    if diff.getbbox() is not None:
+                        diff.save(OUT/f'desktop-{width}-{section}-diff.png')
+                        (OUT/f'desktop-{width}-{section}-diagnostic.json').write_text(json.dumps({'bbox':diff.getbbox(),'before_scroll':old.evaluate('scrollY'),'after_scroll':new.evaluate('scrollY')}))
                     check(f'baseline {width}/{section}: pixel-identical desktop',diff.getbbox() is None)
             for q in [old,new]:q.set_viewport_size({'width':430,'height':844})
             for section in SECTIONS:
                 for q in [old,new]:jump(q,section)
                 check(f'mobile {section}: unchanged text/button positions',geometry(old,section)==geometry(new,section))
             for q in [old,new]:jump(q,'core')
-            old.screenshot(path=str(OUT/'core-before.png'));new.screenshot(path=str(OUT/'core-after.png'))
-            # Contrast must survive lack of blur: suppress only the enhancement.
+            stable_screenshot(old,'core-before');stable_screenshot(new,'core-after')
             new.add_style_tag(content='#journey :is(.hero-copy,.chapter-copy)::before{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}')
             result=copy(new,'core').evaluate("e=>{const s=getComputedStyle(e,'::before');return {bg:s.backgroundImage,content:s.content}}")
             check('blur-disabled fallback retains gradient protection',result['content']=='""' and 'linear-gradient' in result['bg'])
             new.screenshot(path=str(OUT/'core-no-blur.png'))
             old_context.close();new_context.close()
-        # Browser accessibility preferences must not remove reading protection.
         page.emulate_media(reduced_motion='reduce')
         page.set_viewport_size({'width':390,'height':844});jump(page,'core')
         check('reduced motion retains mobile readability',copy(page,'core').evaluate("e=>getComputedStyle(e,'::before').content")=='""')
@@ -169,6 +187,7 @@ try:
         check('printing does not add a dark reading layer',copy(page,'core').evaluate("e=>getComputedStyle(e,'::before').content")=='none')
         check('no JavaScript errors',not errors)
         browser.close()
+        completed = True
 finally:
     for server in servers:server.shutdown()
-    (OUT/'results.json').write_text(json.dumps({'info':info,'checks':checks,'errors':errors,'passed':all(x['passed'] for x in checks),'count':len(checks)},indent=2))
+    (OUT/'results.json').write_text(json.dumps({'info':info,'checks':checks,'errors':errors,'completed':completed,'passed':completed and all(x['passed'] for x in checks),'count':len(checks)},indent=2))
