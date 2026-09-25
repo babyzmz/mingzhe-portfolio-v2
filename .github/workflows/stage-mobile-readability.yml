@@ -1,0 +1,67 @@
+name: Stage and verify mobile reading protection
+on:
+  push:
+    branches: [fix/mobile-scene-readability-20260925]
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build both editions and run checks
+        run: |
+          npm run build:offline
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Build exact pre-change baseline for visual comparisons
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/readability-base" a6e1f9e188ab57100b53f86733273f0d0c6b9733
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/readability-base/node_modules"
+          cd "$RUNNER_TEMP/readability-base"
+          npm run build
+      - name: Install Chromium and WebKit test engines
+        run: |
+          python -m pip install playwright==1.57.0 pillow==11.3.0
+          python -m playwright install --with-deps chromium webkit
+      - name: Chromium WebGL, touch and desktop baseline acceptance
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
+          PORTFOLIO_BASE_DIST: ${{ runner.temp }}/readability-base/dist
+        run: python tests/mobile-readability.browser.py
+      - name: WebKit mobile reading and desktop baseline acceptance
+        env:
+          READABILITY_ENGINE: webkit
+          PORTFOLIO_BASE_DIST: ${{ runner.temp }}/readability-base/dist
+        run: python tests/mobile-readability.browser.py
+      - name: Preserve the exact approved resume and source scope
+        run: |
+          git diff --exit-code a6e1f9e188ab57100b53f86733273f0d0c6b9733 -- src/ public/ package.json package-lock.json
+      - name: Commit only the rebuilt standalone edition
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'fix/mobile-scene-readability-20260925'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- Mingzhe-Portfolio-Preview.html
+          if ! git diff --cached --quiet; then
+            git commit -m 'build: regenerate verified offline reading protection'
+            git push origin HEAD:refs/heads/fix/mobile-scene-readability-20260925
+          fi
+          git rev-parse HEAD > test-artifacts/verified-revision.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-readability-acceptance
+          path: test-artifacts/
+          retention-days: 7
