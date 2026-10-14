@@ -7,11 +7,11 @@
  * remotes and unsanitised captures live only in .handoff-private/.
  */
 export type ProjectId =
- | 'fairy' | 'core' | 'claw' | 'ax' | 'dreambound'
+ | 'fairy' | 'shixu' | 'core' | 'claw' | 'ax' | 'dreambound'
  | 'webchange' | 'goodnight' | 'tarot' | 'converter';
 
 export const PROJECT_IDS: ProjectId[] = [
- 'fairy', 'core', 'claw', 'ax', 'dreambound',
+ 'fairy', 'shixu', 'core', 'claw', 'ax', 'dreambound',
  'webchange', 'goodnight', 'tarot', 'converter'
 ];
 
@@ -50,7 +50,7 @@ export type ProjectMedia = {
  publication: 'approved' | 'withheld';
 };
 
-export type LinkKind = 'source' | 'demo' | 'download' | 'record';
+export type LinkKind = 'website' | 'source' | 'demo' | 'download' | 'record';
 export type LinkAccess = 'public' | 'restricted';
 export type LinkVerification = 'verified' | 'unverified';
 export type LinkPublication = 'approved' | 'withheld';

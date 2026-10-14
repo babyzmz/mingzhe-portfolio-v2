@@ -43,7 +43,7 @@ try:
    # This container has no WebGL; stop CPU scene work to isolate text UI checks.
    page.evaluate("document.querySelector('#scene').dispatchEvent(new Event('webglcontextlost',{cancelable:true}))")
   page.wait_for_function("document.querySelector('#home h1').dataset.wordState === 'revealed'")
-  check('all nine local-upload projects exist',page.locator('[data-project-card]').count()==9)
+  check('all ten portfolio projects exist',page.locator('[data-project-card]').count()==10)
   check('reference effect only used on selected homepage copy',page.locator('[data-word-reveal]').count()==9)
   check('word splitting never enters contact title',page.locator('#contact .word-token').count()==0)
   check('word splitting never enters colour-fill headings',page.locator('[data-fill] .word-token').count()==0)

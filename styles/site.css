@@ -11,4 +11,21 @@
 html[data-surface='light'] .header{color:#20322b;background:#eeeee8dd;border-color:#25443326}html[data-surface='light'] .brand svg,html[data-surface='light'] .brand-dot{color:#345f4e}html[data-surface='light'] .main-nav{color:#58665c}html[data-surface='light'] .language-toggle .selected{color:#163829}html[data-surface='light'] .contact-pill{border-color:#294b3633}html[data-surface='light'] .contact-pill:hover{background:#365c4620}
 @keyframes spark-turn{to{transform:rotate(360deg)}}
 
-.shixu-launch{margin:40px 0;padding:32px;border:1px solid #aaa4f655;border-radius:20px;background:#aaa4f610;display:flex;justify-content:space-between;gap:32px}.shixu-launch span{font-size:12px;letter-spacing:.15em;color:#aaa4f6}.shixu-launch h3{font-size:30px;margin:16px 0}.shixu-launch p{max-width:540px;line-height:1.8;color:#aab0bf}.shixu-launch>div:last-child{display:flex;flex-direction:column;gap:18px;justify-content:center;white-space:nowrap}@media(max-width:700px){.shixu-launch{flex-direction:column;padding:24px}.shixu-launch h3{font-size:24px}}
+
+/* Shixu uses the same project and case surfaces as the portfolio. */
+.shixu-project-icon{flex:none;width:28px;height:28px;display:inline-block;vertical-align:middle;margin-right:8px}
+.project-card[data-project-card="shixu"] h3 button{display:inline-flex;align-items:center;gap:2px}
+.shixu-card-links{display:flex;flex-wrap:wrap;gap:8px 16px;margin:14px 0 4px}
+.shixu-card-links a{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#314d3d;min-height:32px;text-decoration:underline;text-underline-offset:4px}
+.shixu-card-links svg{width:12px;height:12px}
+.mini-shixu{height:100%;display:grid;place-content:center;text-align:center;font-size:48px;color:#dcebe2}
+.mini-shixu span{display:block;margin-top:12px;font:9px var(--mono)}
+.shixu-live-preview{margin:26px 0;border-top:1px solid #c2d7c428;border-bottom:1px solid #c2d7c428}
+.shixu-live-preview summary{display:flex;justify-content:space-between;align-items:center;gap:16px;cursor:pointer;min-height:64px;font-size:16px;color:#dcebe2;list-style:none}
+.shixu-live-preview summary::-webkit-details-marker{display:none}
+.shixu-live-preview summary svg{flex:none;width:20px;height:20px;transition:transform .2s}
+.shixu-live-preview[open] summary svg{transform:rotate(90deg)}
+.shixu-live-preview iframe{display:block;width:100%;height:680px;border:0;border-radius:6px;background:#f7f8fa}
+.shixu-live-preview p{font-size:12px;line-height:1.8;color:#a0b5a6;margin:14px 0 20px}
+.shixu-case-entry .case-link-list{margin-top:24px}
+@media(max-width:650px){.shixu-live-preview iframe{height:620px}.shixu-live-preview summary{font-size:14px}.shixu-case-entry .case-link-btn{white-space:normal;min-height:44px}}

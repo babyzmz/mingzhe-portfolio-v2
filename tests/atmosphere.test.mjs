@@ -5,9 +5,9 @@ import {renderSite} from '../.test-build/views.js';
 for(const locale of ['en','zh']) test(`atmosphere structure without duplicated content ${locale}`,()=>{
  const html=renderSite(locale);
  assert.equal((html.match(/data-circular-mark/g)||[]).length,1);
- assert.equal((html.match(/data-card-light/g)||[]).length,9);
+ assert.equal((html.match(/data-card-light/g)||[]).length,10);
  assert.equal((html.match(/data-contact-stream(?:\s|>)/g)||[]).length,1);
- assert.equal((html.match(/data-project-card=/g)||[]).length,9);
+ assert.equal((html.match(/data-project-card=/g)||[]).length,10);
  assert.ok(!html.includes('Systems in</'));
 });
 test('single background host is outside locale-replaced site',()=>{

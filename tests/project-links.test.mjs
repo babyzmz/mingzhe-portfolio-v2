@@ -6,7 +6,7 @@ import {
 } from '../.test-build/project-links.js';
 import {PROJECT_IDS} from '../.test-build/project-types.js';
 
-test('registry covers all nine project ids', () => {
+test('registry covers every registered project id', () => {
  assert.deepEqual(Object.keys(projectLinks).sort(), [...PROJECT_IDS].sort());
  for (const id of PROJECT_IDS) assert.ok(Array.isArray(linksFor(id)));
 });

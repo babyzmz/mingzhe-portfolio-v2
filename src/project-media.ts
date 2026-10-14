@@ -1,3 +1,4 @@
+import {shixuMedia} from './shixu-content.js';
 /**
  * Registry of approved public project media and its selection/validation rules.
  *
@@ -35,6 +36,7 @@ export const EVIDENCE_KIND_LABELS: Record<EvidenceKind, Localized> = {
  */
 const D = '2026-09-19';
 export const projectMedia: ProjectMedia[] = [
+ ...shixuMedia,
  // ── Fairy: native Tauri/React desktop (rail blurred in the video) ──────────
  {
   id: 'fairy-permissions', projectId: 'fairy', type: 'screenshot',
@@ -373,7 +375,7 @@ function activeItems(): ProjectMedia[] {
  return Array.isArray(fixture) ? (fixture as ProjectMedia[]) : projectMedia;
 }
 
-const MEDIA_ROUTE_PREFIXES = ['media/'];
+const MEDIA_ROUTE_PREFIXES = ['media/', 'shixu/assets/'];
 
 export function mediaFor(id: ProjectId): ProjectMedia[] {
  return activeItems().filter(item => item.projectId === id);

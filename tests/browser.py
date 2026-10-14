@@ -31,7 +31,7 @@ with sync_playwright() as p:
     gl_renderer=webgl_renderer(page)
     print(f'[browser] renderer={mode} scrollBackend={scroll_backend} gl={gl_renderer}')
     check('identity and first heading visible',page.locator('h1').is_visible() and 'Mingzhe' in page.locator('.hero-description').inner_text())
-    check('all nine projects rendered',page.locator('[data-project-card]').count()==9)
+    check('all ten projects rendered',page.locator('[data-project-card]').count()==10)
     check('no desktop overflow',page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
     check('actual 3D renderer initialized',mode in ['webgl','software-3d'],mode)
     check('document is not bound as a motion button',page.locator('html').get_attribute('aria-pressed') is None)
@@ -70,8 +70,8 @@ with sync_playwright() as p:
     page.locator('button[data-motion]').click();page.wait_for_timeout(200)
     check('motion button changes actual state',page.locator('button[data-motion]').get_attribute('aria-pressed')!=paused)
     page.locator('[data-filter="archive"]').click();check('archive filter shows five',page.locator('[data-project-card]:visible').count()==5)
-    page.locator('[data-filter="ai"]').click();check('AI filter shows four',page.locator('[data-project-card]:visible').count()==4)
-    page.locator('[data-filter="all"]').click();check('all filter restores nine',page.locator('[data-project-card]:visible').count()==9)
+    page.locator('[data-filter="ai"]').click();check('AI filter shows five',page.locator('[data-project-card]:visible').count()==5)
+    page.locator('[data-filter="all"]').click();check('all filter restores ten',page.locator('[data-project-card]:visible').count()==10)
     # Every case must actually open and include evidence, not only exist in data.
     for ident in ['fairy','core','claw','ax','dreambound','webchange','goodnight','tarot','converter']:
         page.locator('[data-project-card] [data-case="'+ident+'"]').first.click()
@@ -94,7 +94,7 @@ with sync_playwright() as p:
     check('Chinese mobile content stays within viewport',mobile.evaluate('document.documentElement.scrollWidth <= innerWidth') and mobile.locator('html').get_attribute('lang')=='zh-CN')
     reduced=browser.new_page(viewport={'width':1280,'height':800},reduced_motion='reduce');load(reduced)
     check('reduced motion respected',reduced.locator('html').get_attribute('data-motion')=='reduced')
-    check('reduced motion preserves all content',reduced.locator('[data-project-card]').count()==9)
+    check('reduced motion preserves all content',reduced.locator('[data-project-card]').count()==10)
     # Simulates a renderer initialization failure, not a success.
     # add_init_script survives real HTTP navigation; a pre-goto evaluate would not.
     disabled_ctx=browser.new_context(viewport={'width':1280,'height':800})

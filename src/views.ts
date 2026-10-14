@@ -15,6 +15,7 @@ const circularMark='<span class="nav-orbit" data-circular-mark aria-hidden="true
 const mark='<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 25V7l8 11 8-11v18M20 7h8L20 25h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 function art(p:Project):string{
  const kind=p.id;
+ if(kind==='shixu')return '<div class="mini-shixu">拾序<span>SHIXU / PERSONAL WORKSPACE</span></div>';
  if(kind==='fairy')return '<div class="mini-eye"><i></i><b></b><em></em></div><span class="art-note">LOCAL-FIRST / DESKTOP</span>';
  if(kind==='core')return '<div class="mini-core"><i></i><i></i><i></i><i></i></div><span class="art-note">CAPABILITIES / EXECUTION</span>';
  if(kind==='claw'||kind==='ax')return `<div class="mini-window"><div><b>${kind==='claw'?'M/':'AX'}</b><i></i><i></i></div><section><aside></aside><span><i></i><i></i><i></i></span></section></div><span class="art-note">${kind==='claw'?'PERSONAL / WORKSPACE':'ENTERPRISE / WORKSPACE'}</span>`;
@@ -33,14 +34,14 @@ function cardArt(p:Project,lang:Locale,eager=false):string{
 }
 function projectLinksHtml(p:Project,lang:Locale):string{
  const groups=linksByKind(p.id as ProjectId);
- const order:LinkKind[]=['demo','source','download','record'];
+ const order:LinkKind[]=['website','demo','source','download','record'];
  const t=text[lang];
  const blocks=order.flatMap(kind=>groups[kind].map(link=>{
   const restricted=link.access==='restricted';
   const note=restricted&&link.accessNote?`<span class="case-link-note">${esc(link.accessNote[lang])}</span>`:'';
   const cls=kind==='record'?'case-link-quiet':'case-link-btn';
   const icon=kind==='download'?down:arrow;
-  return `<span class="case-link"><a class="${cls}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(LINK_KIND_LABELS[kind][lang])}${icon}</a>${note}</span>`;
+  return `<span class="case-link"><a class="${cls}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(p.id==='shixu'?link.label[lang]:LINK_KIND_LABELS[kind][lang])}${icon}</a>${note}</span>`;
  }));
  if(blocks.length)return `<div class="case-link-list">${blocks.join('')}</div>`;
  return `<p class="private-note">${esc(t.private)} · ${lang==='zh'?'仅展示适合公开的项目说明':'Public-safe project description only'}</p>`;
@@ -48,12 +49,12 @@ function projectLinksHtml(p:Project,lang:Locale):string{
 export function card(p:Project,lang:Locale,index:number):string{
  const c=p[lang],t=text[lang];
  const grouped=linksByKind(p.id as ProjectId);
- const accessLabel=grouped.source.length?t.publicSource:grouped.record.length?t.record:t.private;
+ const accessLabel=p.id==='shixu'&&grouped.demo.length?(lang==='zh'?'在线工作台':'Live workbench'):grouped.source.length?t.publicSource:grouped.record.length?t.record:t.private;
  return `<article class="project-card" data-card-light data-project-card="${p.id}" data-kind="${p.kind}">
  <span class="card-edge-light" aria-hidden="true"></span><span class="card-spotlight" aria-hidden="true"></span>
  <button class="project-art art-${p.id}${(!isSingleFileEdition()&&coverFor(p.id as ProjectId))?' has-real-cover':''}" data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}"><span class="art-index">${String(index+1).padStart(2,'0')}</span>${cardArt(p,lang)}<span class="art-open">${arrow}</span></button>
- <div class="project-topline"><span>${esc(c.category)}</span><span>${p.kind==='ai'?'↗':'↳'}</span></div><h3><button data-case="${p.id}">${esc(p.name)}</button></h3>
- <p>${esc(c.summary)}</p><div class="project-bottom"><span>${esc(accessLabel)}</span><button data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}">${plus}</button></div></article>`;
+ <div class="project-topline"><span>${esc(c.category)}</span><span>${p.kind==='ai'?'↗':'↳'}</span></div><h3><button data-case="${p.id}">${p.id==='shixu'&&!isSingleFileEdition()?'<img class="shixu-project-icon" src="./shixu/assets/icon.svg" width="28" height="28" alt="">':''}${esc(p.name)}</button></h3>
+ <p>${esc(c.summary)}</p>${p.id==='shixu'?`<div class="shixu-card-links">${[['./shixu/',lang==='zh'?'官网':'Website'],['./shixu/workbench/',lang==='zh'?'网页工作台':'Workbench'],['./shixu/download/',lang==='zh'?'Windows 下载':'Windows download']].map(([url,label])=>`<a href="${url}">${label}${arrow}</a>`).join('')}</div>`:''}<div class="project-bottom"><span>${esc(accessLabel)}</span><button data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}">${plus}</button></div></article>`;
 }
 export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  ssrSingleFile=opts.singleFile===true;
@@ -62,7 +63,7 @@ export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  const btn=(id:string,label=t.case)=>`<button class="text-button" data-case="${id}">${esc(label)}<span>${arrow}</span></button>`;
  return `<a class="skip-link" href="#work">${t.skip}</a>
  <header class="header"><a class="brand" href="#home" aria-label="Mingzhe Zhang — ${t.back}"><span class="nav-mark">${circularMark}${mark}</span><span>MINGZHE<span class="brand-dot">.</span></span></a>
- <nav class="main-nav" aria-label="${lang==='en'?'Main navigation':'主导航'}"><a href="./shixu/">拾序</a><a href="#work">${t.navWork}</a><a href="#method">${t.navMethod}</a><a href="#about">${t.navAbout}</a></nav>
+ <nav class="main-nav" aria-label="${lang==='en'?'Main navigation':'主导航'}"><a href="./shixu/">${lang==='zh'?'拾序':'Shixu'}</a><a href="#work">${t.navWork}</a><a href="#method">${t.navMethod}</a><a href="#about">${t.navAbout}</a></nav>
  <div class="header-actions"><button class="language-toggle" data-locale aria-label="${lang==='en'?'Switch to Chinese':'切换为英文'}"><span class="${lang==='en'?'selected':''}">EN</span><i>/</i><span class="${lang==='zh'?'selected':''}">中</span></button><a class="contact-pill" href="#contact">${t.navContact}<span>↗</span></a><button class="menu-toggle" data-menu aria-label="${t.menu}" aria-expanded="false"><i></i><i></i></button></div></header>
  <main><div id="journey" class="journey">
  <section class="chapter hero" id="home" data-scene="0"><div class="chapter-inner">
@@ -88,8 +89,8 @@ export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  <div class="method-steps">${[1,2,3,4].map(n=>`<article><span>0${n}</span><div><h3>${t['step'+n]}</h3><p>${t['step'+n+'d']}</p></div></article>`).join('')}<p class="illustration-note">${t.methodProof}</p></div></div></section>
  </div>
  <section class="work-section light-section" id="work"><div class="section-wrap"><div class="archive-heading"><div><p class="eyebrow">${t.archiveKicker}</p><h2 data-fill="cyan">${t.archiveA}<br><span>${t.archiveB}</span></h2></div><div class="archive-intro"><span class="archive-asterisk" aria-hidden="true">✳</span><p data-word-reveal>${t.archiveDesc}</p></div></div>
- <div class="filter-bar"><div role="group" aria-label="${lang==='en'?'Project filters':'项目筛选'}"><button class="active" data-filter="all" aria-pressed="true">${t.all}<span>09</span></button><button data-filter="ai" aria-pressed="false">${t.ai}<span>04</span></button><button data-filter="archive" aria-pressed="false">${t.archive}<span>05</span></button></div><span class="filter-count"><b id="project-count">09</b> ${t.catalogCount}</span></div>
- <article class="shixu-launch"><div><span>FAIRY SERIES / 拾序</span><h3>拾起琐事，排好一天。</h3><p>待办、日程、便签，一处安放。Windows 桌面与网页，登录同一账户接着做。</p></div><div><a href="./shixu/">探索拾序 ↗</a><a href="./shixu/workbench/">网页工作台 ↗</a><a href="./shixu/download/">下载桌面端 ↓</a></div></article><div class="project-grid">${projects.map((p,i)=>card(p,lang,i)).join('')}</div>
+ <div class="filter-bar"><div role="group" aria-label="${lang==='en'?'Project filters':'项目筛选'}"><button class="active" data-filter="all" aria-pressed="true">${t.all}<span>${String(projects.length).padStart(2,'0')}</span></button><button data-filter="ai" aria-pressed="false">${t.ai}<span>${String(projects.filter(p=>p.kind==='ai').length).padStart(2,'0')}</span></button><button data-filter="archive" aria-pressed="false">${t.archive}<span>${String(projects.filter(p=>p.kind==='archive').length).padStart(2,'0')}</span></button></div><span class="filter-count"><b id="project-count">${String(projects.length).padStart(2,'0')}</b> ${t.catalogCount}</span></div>
+ <div class="project-grid">${projects.map((p,i)=>card(p,lang,i)).join('')}</div>
  <div class="archive-footnote"><span>↳</span><p>${lang==='en'?'Every project keeps its context. Open a case to see contribution scope, source basis and current limitations.':'每个项目都保留自己的上下文。打开项目详情，可以查看参与范围、来源依据和当前限制。'}</p><button data-evidence>${t.evidence}${arrow}</button></div></div></section>
  <section class="about-section" id="about"><div class="section-wrap"><p class="eyebrow">${t.aboutKicker}</p><div class="about-layout"><div class="about-copy"><h2 data-fill="neutral">${t.aboutA}<br><span>${t.aboutB}</span></h2><p data-word-reveal>${t.aboutDesc}</p><p data-word-reveal>${t.aboutDesc2}</p><div class="personal-facts"><span>${t.citizen}</span><span>${t.languages}</span></div><p class="guitar-note"><span>♫</span>${t.guitar}</p><a class="text-button" href="${profile.resume}" download="Mingzhe_Zhang_Resume.pdf">${t.resume}<span>${down}</span></a></div>
  <div class="timeline"><p class="timeline-title">${t.background}<span>01—04</span></p>
@@ -114,10 +115,10 @@ export function renderCase(p:Project,lang:Locale):string{
  const sectionTitle=(number:string,title:string)=>`<div class="case-section-title" data-reveal><span>${number}</span><h3>${esc(title)}</h3></div>`;
  const links=projectLinksHtml(p,lang);
  const cover=isSingleFileEdition()?null:coverFor(p.id as ProjectId);
- const heroCaption=cover?(lang==='zh'?'实际运行素材截图 · 非示意':'Captured from the running program'):l.visual;
+ const heroCaption=cover?(cover.evidenceKind==='owner-supplied'?(lang==='zh'?'官网产品截图 · 示例事项':'Published product screenshot with example items'):(lang==='zh'?'实际运行素材截图 · 非示意':'Captured from the running program')):l.visual;
  const mediaGallery=isSingleFileEdition()?'':gallerySection(gallery(p.id as ProjectId),lang);
  return `<div class="case-sheet" data-case-id="${p.id}">
- <header class="case-toolbar"><span class="case-series">${l.series}<b>${String(index+1).padStart(2,'0')} / 09</b></span><div class="case-tools"><button data-case-locale aria-label="${l.locale}">${lang==='zh'?'EN':'中文'}</button><button class="case-arrow" data-case-next="${previous.id}" aria-label="${l.labelPrev}">←</button><button class="case-arrow" data-case-next="${next.id}" aria-label="${l.labelNext}">→</button><button class="case-close" data-close aria-label="${l.close}"><span>${l.back}</span><b>×</b></button></div></header>
+ <header class="case-toolbar"><span class="case-series">${l.series}<b>${String(index+1).padStart(2,'0')} / ${String(projects.length).padStart(2,'0')}</b></span><div class="case-tools"><button data-case-locale aria-label="${l.locale}">${lang==='zh'?'EN':'中文'}</button><button class="case-arrow" data-case-next="${previous.id}" aria-label="${l.labelPrev}">←</button><button class="case-arrow" data-case-next="${next.id}" aria-label="${l.labelNext}">→</button><button class="case-close" data-close aria-label="${l.close}"><span>${l.back}</span><b>×</b></button></div></header>
  <div class="case-scroll" tabindex="0" aria-label="${esc(p.name)} ${lang==='zh'?'项目详情':'case study'}">
  <section class="case-hero" data-case-section="overview">
   <div class="case-hero-copy"><p class="case-kicker" data-case-intro>${esc(c.category)}</p><h2 id="dialog-title" tabindex="-1" data-case-intro>${esc(p.name)}</h2><p class="case-tagline" data-case-intro>${esc(d.tagline)}</p><div class="case-stack" data-case-intro>${p.stack.map(item=>`<span>${esc(item)}</span>`).join('')}</div><div class="case-status" data-case-intro><i></i>${esc(c.status)}</div></div>
@@ -126,7 +127,7 @@ export function renderCase(p:Project,lang:Locale):string{
  <nav class="case-toc" aria-label="${lang==='zh'?'项目内容目录':'Case study navigation'}"><div class="case-toc-links">${['overview','workflow','features','build','evidence'].map((key,i)=>`<button data-case-jump="${key}" ${i===0?'aria-current="location"':''}><span>0${i+1}</span>${l[key]}</button>`).join('')}</div><span class="case-reading">${l.read}<b data-reading-label>00%</b></span><div class="case-progress"><i data-reading-bar></i></div></nav>
  <article class="case-article">
   <section class="case-overview case-section">
-   ${sectionTitle('01',l.what)}<p class="case-body-lead" data-reveal>${esc(d.purpose)}</p><div class="case-audience" data-reveal><span>${l.for}</span><p>${esc(d.audience)}</p></div>${mediaGallery}
+   ${sectionTitle('01',l.what)}<p class="case-body-lead" data-reveal>${esc(d.purpose)}</p><div class="case-audience" data-reveal><span>${l.for}</span><p>${esc(d.audience)}</p></div>${p.id==='shixu'?`<div class="shixu-case-entry">${links}</div>${isSingleFileEdition()?'':`<details class="shixu-live-preview" data-shixu-preview><summary>${lang==='zh'?'在这里打开网页工作台':'Open the web workbench here'} ${arrow}</summary><iframe src="./shixu/workbench/" title="${lang==='zh'?'拾序网页工作台':'Shixu web workbench'}" loading="lazy" allow="clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe><p>${lang==='zh'?'网页助手使用本地规则；原生桌面组件在 Windows 端使用。':'The web assistant uses local rules. Native desktop widgets require Windows.'}</p></details>`}`:''}${mediaGallery}
   </section>
   <section class="case-section case-workflow" data-case-section="workflow">
    ${sectionTitle('02',l.flow)}<div class="case-scenario" data-reveal><span>${l.intent}</span><blockquote>${esc(d.scenario)}</blockquote></div>
@@ -141,7 +142,7 @@ export function renderCase(p:Project,lang:Locale):string{
    <div class="case-glossary" data-reveal><button data-glossary-toggle aria-expanded="false" aria-controls="case-glossary-body"><span><b>${l.terms}</b><small>${d.terms.length} ${lang==='zh'?'个术语 · 点击展开':'terms · tap to expand'}</small></span><i aria-hidden="true">+</i></button><div id="case-glossary-body" hidden><dl>${d.terms.map(term=>`<div><dt>${esc(term.title)}</dt><dd>${esc(term.body)}</dd></div>`).join('')}</dl></div></div>
   </section>
   <section class="case-section case-proof" data-case-section="evidence">
-   ${sectionTitle('05',l.verified)}<div class="case-proof-status" data-reveal><span>${l.status}</span><strong>${esc(c.status)}</strong></div><div class="case-proof-grid"><div data-reveal><h4>${l.basis}</h4><p>${esc(c.evidence)}</p>${links}</div><div data-reveal><h4>${l.limits}</h4><p>${esc(c.limits)}</p></div></div>
+   ${sectionTitle('05',l.verified)}<div class="case-proof-status" data-reveal><span>${l.status}</span><strong>${esc(c.status)}</strong></div><div class="case-proof-grid"><div data-reveal><h4>${l.basis}</h4><p>${esc(c.evidence)}</p>${p.id==='shixu'?'':links}</div><div data-reveal><h4>${l.limits}</h4><p>${esc(c.limits)}</p></div></div>
   </section>
   <footer class="case-next" data-reveal><div><span>${l.next}</span><button data-case-next="${next.id}">${esc(next.name)} ${arrow}</button></div><button class="case-return" data-close>${l.return} ↗</button></footer>
  </article></div></div>`;
