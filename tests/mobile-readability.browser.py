@@ -149,7 +149,7 @@ try:
         for section in ['work','about','contact']:
             jump(page,section)
             check(f'{section}: no reading shield outside 3D journey',page.locator('#'+section).evaluate("e=>getComputedStyle(e).getPropertyValue('--mobile-reading-shield')")== '')
-        check('corrected footer and all project cards preserved',page.locator('[data-contact-stream]').count()==1 and page.locator('[data-project-card]').count()==9)
+        check('corrected footer and all project cards preserved',page.locator('[data-contact-stream]').count()==1 and page.locator('[data-project-card]').count()==10)
         if base_url:
             old_context=browser.new_context(viewport={'width':1440,'height':960},device_scale_factor=1)
             new_context=browser.new_context(viewport={'width':1440,'height':960},device_scale_factor=1)

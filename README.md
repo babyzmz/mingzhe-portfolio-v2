@@ -1,6 +1,12 @@
 # Mingzhe — Systems in Motion · v2.1
 
-A bilingual personal portfolio for Mingzhe Zhang / Richie. This edition combines a continuous five-chapter 3D narrative with nine source-aware project cases, a development-method section, education and internship history, and the supplied current CV.
+A bilingual personal portfolio for Mingzhe Zhang / Richie. This edition combines a continuous five-chapter 3D narrative with ten source-aware project cases, a development-method section, education and internship history, and the supplied current CV.
+
+## Shixu Integration
+
+Shixu is included in the bilingual project catalogue and case reader with its published product screenshots. The case embeds the real web workbench and links to the product site and stable Windows download page. Web local-rule assistance and Windows native widgets are described separately.
+
+Production: https://fairyllm.com/ from `babyzmz/mingzhe-portfolio-v2`. The existing `public/shixu/`, `public/CNAME` and manual Pages workflow are retained. Product data lives in `src/shixu-content.ts`; focused browser checks are in `tests/shixu.browser.py`.
 
 ## v2.1 — 项目展开与说明更新
 

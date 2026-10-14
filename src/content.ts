@@ -1,3 +1,4 @@
+import {shixuProject} from './shixu-content.js';
 import type { Locale } from './state.js';
 export type ProjectCopy = { category: string; summary: string; role: string; status: string; evidence: string; limits: string; features: string[]; challenge: string };
 export type Project = {id: string; name: string; short: string; kind: 'ai' | 'archive'; stack: string[]; url: string | null; en: ProjectCopy; zh: ProjectCopy};
@@ -57,6 +58,7 @@ export const projects: Project[] = [
    "challenge": "构建通过并不等于桌面应用好用。开发中需要复现真实窗口与交互问题，并在自动化测试之外检查实际行为。"
   }
  },
+ shixuProject,
  {
   "id": "core",
   "name": "MojoCore",
@@ -451,9 +453,9 @@ export const text: Record<Locale,Record<string,string>> = {
   "archiveKicker": "SELECTED WORK & EARLIER EXPLORATIONS",
   "archiveA": "Built from",
   "archiveB": "curiosity.",
-  "archiveDesc": "Four ongoing AI projects. Five earlier experiments. A record of learning by making.",
+  "archiveDesc": "Ongoing AI projects, a personal workbench and five earlier experiments. Learning by making.",
   "all": "All projects",
-  "ai": "AI systems",
+  "ai": "AI & applications",
   "archive": "Earlier work",
   "detail": "Read project",
   "record": "Project record",
@@ -576,9 +578,9 @@ export const text: Record<Locale,Record<string,string>> = {
   "archiveKicker": "重点项目与早期探索",
   "archiveA": "从好奇，",
   "archiveB": "到作品。",
-  "archiveDesc": "四个持续开发的 AI 项目，五个早期探索。记录在实践中学习的过程。",
+  "archiveDesc": "持续开发的 AI 项目、个人事项工作台与五个早期探索。记录在实践中学习的过程。",
   "all": "全部项目",
-  "ai": "AI 系统",
+  "ai": "AI 与应用",
   "archive": "早期作品",
   "detail": "了解项目",
   "record": "项目记录",

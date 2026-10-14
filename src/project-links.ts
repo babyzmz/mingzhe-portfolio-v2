@@ -1,3 +1,4 @@
+import {shixuLinks} from './shixu-content.js';
 /**
  * Registry of public project links plus URL-safety and visibility rules.
  *
@@ -8,6 +9,7 @@
 import {PROJECT_IDS,type ProjectId,type ProjectLink,type LinkKind,type Localized} from './project-types.js';
 
 export const LINK_KIND_LABELS: Record<LinkKind, Localized> = {
+ website: {en: 'Product site', zh: '产品官网'},
  source: {en: 'Source code', zh: '项目源码'},
  demo: {en: 'Live demo', zh: '在线演示'},
  download: {en: 'Download', zh: '安装包下载'},
@@ -31,6 +33,7 @@ export const projectLinks: Record<ProjectId, ProjectLink[]> = {
    publication: 'approved'
   }
  ],
+ shixu: shixuLinks,
  core: [],
  claw: [],
  ax: [],
@@ -107,7 +110,7 @@ export const projectLinks: Record<ProjectId, ProjectLink[]> = {
 };
 
 /** Same-site routes that a relative public URL is allowed to point at. */
-export const ALLOWED_RELATIVE_PREFIXES = ['media/', 'documents/', 'demos/', 'assets/'];
+export const ALLOWED_RELATIVE_PREFIXES = ['media/', 'documents/', 'demos/', 'assets/', 'shixu/'];
 
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
 
@@ -177,7 +180,7 @@ export function visibleLinks(id: ProjectId): ProjectLink[] {
 }
 
 export function linksByKind(id: ProjectId): Record<LinkKind, ProjectLink[]> {
- const result: Record<LinkKind, ProjectLink[]> = {source: [], demo: [], download: [], record: []};
+ const result: Record<LinkKind, ProjectLink[]> = {website: [], source: [], demo: [], download: [], record: []};
  for (const link of visibleLinks(id)) result[link.kind].push(link);
  return result;
 }

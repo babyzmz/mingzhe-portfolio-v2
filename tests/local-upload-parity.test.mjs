@@ -9,6 +9,11 @@ import {caseLabels} from '../.test-build/case-labels.js';
 import {projectLinks} from '../.test-build/project-links.js';
 import {projectMedia} from '../.test-build/project-media.js';
 const value=structuredClone({profile,projects,text,aiCases,archiveCases,caseLabels,links:projectLinks,media:projectMedia});
+// Compare the original nine-project snapshot separately from the added Shixu entry.
+value.projects=value.projects.filter(p=>p.id!=='shixu');
+delete value.links.shixu;
+value.media=value.media.filter(item=>item.projectId!=='shixu');
+for(const l of ['en','zh']){value.text[l].archiveDesc=l==='en'?'Four ongoing AI projects. Five earlier experiments. A record of learning by making.':'四个持续开发的 AI 项目，五个早期探索。记录在实践中学习的过程。';value.text[l].ai=l==='en'?'AI systems':'AI 系统';}
 // Only the owner's new positioning and the misplaced stream labels may differ.
 for(const p of value.projects)if(['fairy','claw'].includes(p.id))for(const l of ['en','zh']){delete p[l].category;delete p[l].summary;}
 for(const id of ['fairy','claw'])for(const l of ['en','zh'])for(const k of ['tagline','purpose'])delete value.aiCases[id][l][k];
