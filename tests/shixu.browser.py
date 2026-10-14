@@ -46,7 +46,7 @@ try:
     check(f'{width}/{lang} single formal card',card.count()==1 and page.locator('.shixu-launch').count()==0)
     check(f'{width}/{lang} ten projects',page.locator('[data-project-card]').count()==10)
     check(f'{width}/{lang} three visitor routes',card.locator('.shixu-card-links a').count()==3)
-    page.wait_for_function("document.querySelector('[data-project-card=\"shixu\"] img[src$=\"/today.jpg\"]').naturalWidth===1425")
+    page.wait_for_function("(() => {const i=document.querySelector('[data-project-card=\"shixu\"] img[src$=\"/today.jpg\"]');return i.complete&&i.naturalWidth===1425})()")
     check(f'{width}/{lang} real screenshot',card.locator('img[src$="/today.jpg"]').evaluate('(i)=>i.complete&&i.naturalWidth===1425'))
     check(f'{width}/{lang} no page overflow',page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
     page.locator('[data-filter="ai"]').click()
