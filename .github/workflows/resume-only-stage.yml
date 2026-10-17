@@ -1,0 +1,135 @@
+name: Verify resume-only replacement
+on:
+  push:
+    branches: [docs/resume-only-20261018]
+    paths: [.github/workflows/resume-only-stage.yml]
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Read only the reviewed resume generator
+        shell: python
+        run: |
+          import base64,hashlib,json,lzma,pathlib,urllib.request
+          url='https://api.github.com/repos/babyzmz/mingzhe-portfolio-v2/git/blobs/d0c68657b58f48045f071d0cd1711a406f1bebdd'
+          req=urllib.request.Request(url,headers={'User-Agent':'Resume-only-verification'})
+          with urllib.request.urlopen(req,timeout=30) as r: obj=json.load(r)
+          raw=base64.b64decode(base64.b64decode(obj['content']),validate=True)
+          assert hashlib.sha256(raw).hexdigest()=='f6beb41c4ac64c3d5b8ff8fb10fee4030c3645a7045543bb102c14ad41054ce8'
+          data=lzma.decompress(raw)
+          assert hashlib.sha256(data).hexdigest()=='7f941d3ecdafa38a3e875c606951c7a1f71861c8aa8619431c7546039bd20505'
+          source=json.loads(data)['scripts/build-resume.py']
+          p=pathlib.Path('test-artifacts/resume/source/build-resume.py');p.parent.mkdir(parents=True,exist_ok=True);p.write_text(source)
+          # Do not extract or execute the earlier website-content modification script.
+      - name: Install document and browser tooling
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libreoffice-writer fonts-crosextra-carlito fonts-liberation2 poppler-utils
+          python -m pip install python-docx==1.2.0 pypdf==5.9.0 playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Generate updated two-page resume
+        run: |
+          python test-artifacts/resume/source/build-resume.py --out test-artifacts/resume
+          libreoffice -env:UserInstallation=file://$RUNNER_TEMP/resume-only-lo --headless --convert-to pdf --outdir test-artifacts/resume test-artifacts/resume/*.docx
+          cp test-artifacts/resume/*.pdf public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf
+          pdftoppm -scale-to 1600 -png public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf test-artifacts/resume/page
+      - name: Check resume contents and replace only embedded PDF bytes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib,re
+          from pypdf import PdfReader
+          p=pathlib.Path('public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf');pdf=p.read_bytes();r=PdfReader(p)
+          assert len(r.pages)==2
+          text=' '.join(' '.join(page.extract_text().split()) for page in r.pages)
+          for term in ['Shixu','Fairy','MojoClaw','Mojo Core','MojoAX','fairyllm.com','Cloudflare','Workers','D1','R2','automatic updates and release distribution']:
+              assert term in text,term
+          assert not re.search(r'hot[ -]?(?:reload|update)|Python expert|2024\s*[-–]\s*Present',text,re.I)
+          urls=[str(a.get_object().get('/A',{}).get('/URI','')) for page in r.pages for a in page.get('/Annots',[])]
+          assert 'https://fairyllm.com/' in urls and 'https://fairyllm.com/shixu/' in urls
+          path=pathlib.Path('Mingzhe-Portfolio-Preview.html');before=path.read_bytes()
+          pattern=rb'data:application/pdf;base64,[A-Za-z0-9+/=]+'
+          after,count=re.subn(pattern,b'data:application/pdf;base64,'+base64.b64encode(pdf),before)
+          assert count>=4,count
+          assert re.sub(pattern,b'PDF',before)==re.sub(pattern,b'PDF',after),'unrelated offline markup changed'
+          path.write_bytes(after)
+          result={'pages':2,'sha256':hashlib.sha256(pdf).hexdigest(),'bytes':len(pdf),'links':urls,'embedded_replacements':count,'project_start_dates_added':False,'website_content_changed':False}
+          pathlib.Path('test-artifacts/resume/checks.json').write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2))
+      - name: Build and test unchanged website with the new CV
+        run: |
+          npm ci
+          npm run build
+          npm test
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Check all existing CV download controls over real HTTP
+        env:
+          PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
+        shell: python
+        run: |
+          import functools,hashlib,http.server,json,pathlib,sys,threading
+          from playwright.sync_api import sync_playwright
+          sys.path.insert(0,'tests');from browser_support import launch_browser
+          root=pathlib.Path.cwd();out=root/'test-artifacts/resume';expected=(root/'public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').read_bytes()
+          class Handler(http.server.SimpleHTTPRequestHandler):
+              def log_message(self,*args):pass
+          server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(root/'dist')))
+          threading.Thread(target=server.serve_forever,daemon=True).start();checks=[];errors=[]
+          try:
+              with sync_playwright() as p:
+                  browser,info=launch_browser(p);page=browser.new_page(viewport={'width':1440,'height':960})
+                  page.add_init_script("localStorage.setItem('mz.motion','off');localStorage.setItem('mz.locale','en')")
+                  page.on('pageerror',lambda e:errors.append(str(e)))
+                  page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='load')
+                  page.wait_for_selector('#home h1')
+                  for locale in ['en','zh']:
+                      if locale=='zh':page.locator('[data-locale]').click()
+                      anchors=page.locator('a[download]');assert anchors.count()==3,anchors.count()
+                      for idx in range(3):
+                          with page.expect_download() as d:anchors.nth(idx).click()
+                          assert pathlib.Path(d.value.path()).read_bytes()==expected
+                          checks.append(f'{locale}: main CV control {idx+1}')
+                      page.locator('[data-evidence]').last.click()
+                      page.wait_for_function("document.querySelector('#case-dialog').dataset.phase==='open'")
+                      with page.expect_download() as d:page.locator('#case-dialog a[download]').click()
+                      assert pathlib.Path(d.value.path()).read_bytes()==expected
+                      checks.append(f'{locale}: evidence dialog CV control')
+                      page.locator('#case-dialog [data-close]').click()
+                      page.wait_for_function("!document.querySelector('#case-dialog').open")
+                  page.set_viewport_size({'width':390,'height':844})
+                  assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+                  assert not errors,errors
+                  browser.close()
+              (out/'browser-checks.json').write_text(json.dumps({'checks':checks,'count':len(checks),'errors':errors,'passed':True,'mobile_overflow':False,'browser':info},indent=2))
+          finally:server.shutdown()
+      - name: Guard file scope and save verified candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'docs/resume-only-20261018'
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only']).decode().splitlines())
+          assert changed=={'public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf','Mingzhe-Portfolio-Preview.html'},changed
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf Mingzhe-Portfolio-Preview.html
+          git commit -m 'docs: refresh CV with Shixu, recent Mojo work and Cloudflare delivery'
+          git push origin HEAD:refs/heads/docs/resume-only-20261018
+          git rev-parse HEAD > test-artifacts/resume/verified-revision.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resume-only-verified
+          path: test-artifacts/resume/
+          retention-days: 7
