@@ -1,0 +1,25 @@
+name: Resume and Shixu source intake
+on:
+  push:
+    branches: [docs/resume-cloudflare-20261018]
+    paths: [.github/workflows/resume-shixu-intake.yml]
+permissions:
+  contents: read
+jobs:
+  intake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 840b80306dd489ece29c32b58b5bdc4af0a26127
+      - name: Archive current public source
+        run: |
+          mkdir -p intake
+          git archive --format=tar HEAD > intake/source.tar
+          git rev-parse HEAD > intake/revision.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resume-shixu-current-source
+          path: intake/
+          retention-days: 7
