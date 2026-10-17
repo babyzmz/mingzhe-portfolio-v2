@@ -1,0 +1,24 @@
+name: Capture concurrent Mojo product update
+on:
+  push:
+    branches: [docs/resume-cloudflare-20261018]
+    paths: [.github/workflows/resume-preserve-mojo-intake.yml]
+permissions:
+  contents: read
+jobs:
+  intake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3edfff8bf9bda318a6a1cc1ac63e9c9f75ad99cd
+      - run: |
+          mkdir -p intake
+          git archive --format=tar HEAD > intake/source.tar
+          git rev-parse HEAD > intake/revision.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resume-mojo-current-source
+          path: intake/
+          retention-days: 7
