@@ -18,12 +18,13 @@ try { tsc = require.resolve('typescript/bin/tsc'); } catch { tsc = path.join(exe
 const compiled = spawnSync(process.execPath, [tsc, '-p', 'tsconfig.offline.json'], {stdio: 'inherit'});
 if (compiled.status) process.exit(compiled.status);
 const {renderMojoSite} = await import(pathToFileURL(path.join(root, '.test-build/mojo-view.js')).href + '?t=' + Date.now());
-const pages = renderMojoSite();
+const pages = renderMojoSite(); // LF-only, no timestamps; keys are emitted in a fixed order
 const check = process.argv.includes('--check');
 let stale = 0;
 for (const [rel, html] of Object.entries(pages)) {
  const file = path.join(root, 'public/mojo', rel);
- const current = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+ // Compare with normalised line endings so a CRLF checkout is not reported as stale.
+ const current = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n') : null;
  if (current === html) continue;
  if (check) { console.error(`[mojo-pages] stale: public/mojo/${rel}`); stale++; continue; }
  fs.mkdirSync(path.dirname(file), {recursive: true});

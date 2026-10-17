@@ -1,0 +1,3 @@
+# Generated Mojo product pages are compared byte-for-byte with their generator
+# output; keep them LF on every platform (Windows runners default to CRLF).
+public/mojo/** text eol=lf

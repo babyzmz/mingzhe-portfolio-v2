@@ -26,7 +26,9 @@ test('generated product pages in public/mojo are up to date', () => {
  for (const [rel, html] of Object.entries(site)) {
   const file = path.join(root, 'public/mojo', rel);
   assert.ok(fs.existsSync(file), `missing public/mojo/${rel}; run npm run build:mojo`);
-  assert.equal(fs.readFileSync(file, 'utf8'), html, `stale public/mojo/${rel}; run npm run build:mojo`);
+  // Line endings are normalised: Windows checkouts may convert LF to CRLF.
+  assert.equal(fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n'), html, `stale public/mojo/${rel}; run npm run build:mojo`);
+  assert.ok(!html.includes('\r'), `generator output for ${rel} must be LF-only`);
  }
 });
 
