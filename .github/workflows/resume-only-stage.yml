@@ -18,11 +18,13 @@ jobs:
           node-version: '22'
           cache: npm
       - name: Read only the reviewed resume generator
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: python
         run: |
-          import base64,hashlib,json,lzma,pathlib,urllib.request
+          import base64,hashlib,json,lzma,pathlib,urllib.request,os
           url='https://api.github.com/repos/babyzmz/mingzhe-portfolio-v2/git/blobs/d0c68657b58f48045f071d0cd1711a406f1bebdd'
-          req=urllib.request.Request(url,headers={'User-Agent':'Resume-only-verification'})
+          req=urllib.request.Request(url,headers={'User-Agent':'Resume-only-verification','Authorization':'Bearer '+os.environ['GH_TOKEN']})
           with urllib.request.urlopen(req,timeout=30) as r: obj=json.load(r)
           raw=base64.b64decode(base64.b64decode(obj['content']),validate=True)
           assert hashlib.sha256(raw).hexdigest()=='f6beb41c4ac64c3d5b8ff8fb10fee4030c3645a7045543bb102c14ad41054ce8'
