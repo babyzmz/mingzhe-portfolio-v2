@@ -1,0 +1,118 @@
+name: Publish approved resume-only revision
+# Kept on the staging branch; main changes only the PDF and embedded PDF bytes.
+on:
+  push:
+    branches: [docs/resume-only-20261018]
+    paths: [.github/workflows/resume-only-publish.yml]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: approved-resume-only-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'babyzmz/mingzhe-portfolio-v2'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: babyzmz/mingzhe-portfolio-v2
+      TARGET_SHA: 9ccdb9750d121ce98b6fd976df725982db3c073b
+      BASE_SHA: 56db2a4721e3f284a49f150488734c54fb97d739
+      PDF_SHA256: 977a352da26a9441cb7630e66cf491d6ccf04d47b5a928ce0786ca350f111eff
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 9ccdb9750d121ce98b6fd976df725982db3c073b
+          fetch-depth: 0
+      - name: Guard exact reviewed revision and two-file scope
+        run: |
+          set -euo pipefail
+          test "$(gh api repos/$GH_REPO/git/ref/heads/main --jq '.object.sha')" = "$TARGET_SHA"
+          test "$(gh api repos/$GH_REPO/actions/runs/39040951753 --jq '.conclusion')" = 'success'
+          python - <<'PY'
+          import base64,hashlib,os,pathlib,re,subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only',os.environ['BASE_SHA'],os.environ['TARGET_SHA']]).decode().splitlines())
+          assert changed=={'public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf','Mingzhe-Portfolio-Preview.html'},changed
+          pdf=pathlib.Path('public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').read_bytes()
+          assert hashlib.sha256(pdf).hexdigest()==os.environ['PDF_SHA256']
+          path='Mingzhe-Portfolio-Preview.html'
+          old=subprocess.check_output(['git','show',os.environ['BASE_SHA']+':'+path]);new=pathlib.Path(path).read_bytes()
+          pattern=rb'data:application/pdf;base64,[A-Za-z0-9+/=]+'
+          assert re.sub(pattern,b'PDF',old)==re.sub(pattern,b'PDF',new)
+          embedded=re.findall(pattern,new);assert len(embedded)==5
+          assert all(base64.b64decode(v.split(b',',1)[1])==pdf for v in embedded)
+          assert pathlib.Path('public/CNAME').read_text().strip().lower()=='fairyllm.com'
+          pathlib.Path('publication-evidence').mkdir(exist_ok=True)
+          print('PASS reviewed PDF, exact embedded copies, unchanged page contents and domain')
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build expected production resources
+        run: npm ci && npm run build
+      - name: Require main CI and existing browser regression
+        run: |
+          set -euo pipefail
+          for workflow in ci.yml local-sync-verify.yml; do
+            id=''
+            for attempt in $(seq 1 40); do
+              id=$(gh run list --workflow "$workflow" --commit "$TARGET_SHA" --event push --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+              if [ -n "$id" ]; then break; fi
+              sleep 5
+            done
+            test -n "$id"
+            echo "$workflow $id" >> publication-evidence/verification-runs.txt
+            gh run watch "$id" --exit-status --interval 5
+          done
+      - name: Deploy with the unchanged Pages workflow
+        run: |
+          set -euo pipefail
+          test "$(gh api repos/$GH_REPO/git/ref/heads/main --jq '.object.sha')" = "$TARGET_SHA"
+          gh workflow run pages.yml --ref main -f environment_name=github-pages
+          id=''
+          for attempt in $(seq 1 40); do
+            id=$(gh run list --workflow pages.yml --commit "$TARGET_SHA" --event workflow_dispatch --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "$id"
+          echo "$id" > publication-evidence/pages-run.txt
+          gh run watch "$id" --exit-status --interval 5
+      - name: Verify the current custom-domain PDF and assets
+        shell: python
+        run: |
+          import hashlib,json,os,pathlib,time,urllib.request
+          root=pathlib.Path('dist');base='https://fairyllm.com/';sha=os.environ['TARGET_SHA']
+          expected={p.relative_to(root).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'assets').iterdir() if p.suffix in ['.css','.js']}
+          def get(path,versioned=True):
+              url=base+path+('?cv='+sha if versioned else '')
+              req=urllib.request.Request(url,headers={'Cache-Control':'no-cache','User-Agent':'Portfolio-resume-release-verifier'})
+              with urllib.request.urlopen(req,timeout=20) as response:
+                  assert response.status==200
+                  return response.read()
+          last=''
+          for attempt in range(36):
+              try:
+                  html=get('').decode()
+                  pdf=get('documents/Mingzhe_Zhang_AI_Developer_Resume.pdf')
+                  assert pdf.startswith(b'%PDF-')
+                  assert hashlib.sha256(pdf).hexdigest()==os.environ['PDF_SHA256'],'old PDF'
+                  plain=get('documents/Mingzhe_Zhang_AI_Developer_Resume.pdf',False)
+                  assert hashlib.sha256(plain).hexdigest()==os.environ['PDF_SHA256'],'unversioned PDF still cached'
+                  for name,digest in expected.items():
+                      assert hashlib.sha256(get(name)).hexdigest()==digest,name
+                  assert any(p.split('/')[-1] in html for p in expected if p.endswith('.js')),'old entrypoint'
+                  result={'verified':True,'revision':sha,'url':base,'pdf_url':base+'documents/Mingzhe_Zhang_AI_Developer_Resume.pdf','pdf_sha256':os.environ['PDF_SHA256'],'pdf_bytes':len(pdf),'bundle_sha256':expected,'unversioned_pdf_matches':True,'page_content_changed':False,'checked_at_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+                  pathlib.Path('publication-evidence/live-result.json').write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2));break
+              except Exception as exc:
+                  last=str(exc);print('Waiting for verified public content:',last,flush=True);time.sleep(5)
+          else:raise RuntimeError(last)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resume-only-publication-evidence
+          path: publication-evidence/
+          retention-days: 7
