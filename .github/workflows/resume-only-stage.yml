@@ -70,8 +70,7 @@ jobs:
           npm ci
           npm run build
           npm test
-          # The fourth bundle test requires preview/index.html. Generate its
-          # real build prerequisite, retaining the narrowly patched standalone.
+          # Build the static preview prerequisite without broadening the tracked diff.
           cp Mingzhe-Portfolio-Preview.html "$RUNNER_TEMP/resume-only-standalone.html"
           npm run build:offline
           cp "$RUNNER_TEMP/resume-only-standalone.html" Mingzhe-Portfolio-Preview.html
@@ -82,41 +81,54 @@ jobs:
           PORTFOLIO_BROWSER_ARGS: --no-sandbox;--enable-unsafe-swiftshader
         shell: python
         run: |
-          import functools,hashlib,http.server,json,pathlib,sys,threading
+          import functools,http.server,json,pathlib,sys,threading
           from playwright.sync_api import sync_playwright
           sys.path.insert(0,'tests');from browser_support import launch_browser
           root=pathlib.Path.cwd();out=root/'test-artifacts/resume';expected=(root/'public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').read_bytes()
           class Handler(http.server.SimpleHTTPRequestHandler):
               def log_message(self,*args):pass
           server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(root/'dist')))
-          threading.Thread(target=server.serve_forever,daemon=True).start();checks=[];errors=[]
+          threading.Thread(target=server.serve_forever,daemon=True).start()
+          checks=[];errors=[];inventory=[];passed=False;info={}
           try:
               with sync_playwright() as p:
-                  browser,info=launch_browser(p);page=browser.new_page(viewport={'width':1440,'height':960})
+                  browser,info=launch_browser(p);info['mode']='real HTTP'
+                  page=browser.new_page(viewport={'width':1440,'height':960});page.set_default_timeout(20000)
                   page.add_init_script("localStorage.setItem('mz.motion','off');localStorage.setItem('mz.locale','en')")
                   page.on('pageerror',lambda e:errors.append(str(e)))
-                  page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='load')
-                  page.wait_for_selector('#home h1')
-                  for locale in ['en','zh']:
-                      if locale=='zh':page.locator('[data-locale]').click()
-                      anchors=page.locator('a[download]');assert anchors.count()==3,anchors.count()
-                      for idx in range(3):
-                          with page.expect_download() as d:anchors.nth(idx).click()
+                  try:
+                      page.goto(f'http://127.0.0.1:{server.server_port}/',wait_until='load')
+                      page.wait_for_selector('#home h1')
+                      cv='a[download="Mingzhe_Zhang_Resume.pdf"]'
+                      for locale in ['en','zh']:
+                          if locale=='zh':page.locator('[data-locale]').click()
+                          # The separate media viewer has its own download anchor.
+                          # CV controls are identified by their actual download target.
+                          inventory.append({'locale':locale,'anchors':page.locator('a[download]').evaluate_all('(nodes)=>nodes.map(a=>({download:a.download,href:a.getAttribute("href")}))')})
+                          anchors=page.locator('#site '+cv);assert anchors.count()==3,inventory
+                          for idx in range(anchors.count()):
+                              assert anchors.nth(idx).get_attribute('href')=='./documents/Mingzhe_Zhang_AI_Developer_Resume.pdf'
+                              with page.expect_download() as d:anchors.nth(idx).click()
+                              assert pathlib.Path(d.value.path()).read_bytes()==expected
+                              checks.append(f'{locale}: main CV control {idx+1}');print('PASS',checks[-1],flush=True)
+                          page.locator('[data-evidence]').last.click()
+                          page.wait_for_function("document.querySelector('#case-dialog').dataset.phase==='open'")
+                          with page.expect_download() as d:page.locator('#case-dialog '+cv).click()
                           assert pathlib.Path(d.value.path()).read_bytes()==expected
-                          checks.append(f'{locale}: main CV control {idx+1}')
-                      page.locator('[data-evidence]').last.click()
-                      page.wait_for_function("document.querySelector('#case-dialog').dataset.phase==='open'")
-                      with page.expect_download() as d:page.locator('#case-dialog a[download]').click()
-                      assert pathlib.Path(d.value.path()).read_bytes()==expected
-                      checks.append(f'{locale}: evidence dialog CV control')
-                      page.locator('#case-dialog [data-close]').click()
-                      page.wait_for_function("!document.querySelector('#case-dialog').open")
-                  page.set_viewport_size({'width':390,'height':844})
-                  assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-                  assert not errors,errors
-                  browser.close()
-              (out/'browser-checks.json').write_text(json.dumps({'checks':checks,'count':len(checks),'errors':errors,'passed':True,'mobile_overflow':False,'browser':info},indent=2))
-          finally:server.shutdown()
+                          checks.append(f'{locale}: evidence dialog CV control');print('PASS',checks[-1],flush=True)
+                          page.locator('#case-dialog [data-close]').click()
+                          page.wait_for_function("!document.querySelector('#case-dialog').open")
+                      page.set_viewport_size({'width':390,'height':844})
+                      assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+                      assert not errors,errors
+                      passed=True
+                  except Exception:
+                      page.screenshot(path=str(out/'browser-failure.png'))
+                      raise
+                  finally:browser.close()
+          finally:
+              server.shutdown()
+              (out/'browser-checks.json').write_text(json.dumps({'checks':checks,'count':len(checks),'errors':errors,'passed':passed,'inventory':inventory,'browser':info},indent=2))
       - name: Guard file scope and save verified candidate
         shell: bash
         run: |
