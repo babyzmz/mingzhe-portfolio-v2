@@ -66,9 +66,15 @@ jobs:
           pathlib.Path('test-artifacts/resume/checks.json').write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2))
       - name: Build and test unchanged website with the new CV
         run: |
+          set -euo pipefail
           npm ci
           npm run build
           npm test
+          # The fourth bundle test requires preview/index.html. Generate its
+          # real build prerequisite, retaining the narrowly patched standalone.
+          cp Mingzhe-Portfolio-Preview.html "$RUNNER_TEMP/resume-only-standalone.html"
+          npm run build:offline
+          cp "$RUNNER_TEMP/resume-only-standalone.html" Mingzhe-Portfolio-Preview.html
           node --test tests/bundle.test.mjs
           npm run privacy-check
       - name: Check all existing CV download controls over real HTTP
