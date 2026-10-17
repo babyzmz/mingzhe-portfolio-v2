@@ -26,7 +26,7 @@ Public repository contents were read through the GitHub connector. Repository do
 | Project | What supports the entry | What is NOT asserted |
 |---|---|---|
 | Fairy | User CV and descriptions; public V3 README describes local-first desktop shell, its own Core, chat/projects, tool/Skills integration, documents and voice. | No full native app acceptance, signed release, local-model benchmark or realtime Beta release approval. The optical-eye display is a visual interpretation. |
-| MojoCore | Updated CV/development history; reviewed shared-core documentation. Only public-safe summaries are included. | No published private source, blanket production-readiness claim or claim that Fairy consumes MojoCore. |
+| Mojo Core | Updated CV/development history; reviewed shared-core documentation. Only public-safe summaries are included. | No published private source, blanket production-readiness claim or claim that Fairy consumes Mojo Core. |
 | MojoClaw | Updated CV; reviewed product workspace description and shared-core adapter boundary. | No independently run hosted workbench, customer usage or cross-platform parity certification. |
 | MojoAX | Updated CV; reviewed enterprise workbench documentation. | No claim that every enterprise scaffold is completed, every connector is live, or every client requirement is supported. |
 | Dreambound Realm | Original project entry plus inspected `demos/dreambound/index.html`: Canvas, Memory Tide start screen, HP/Skill/room HUD, Echo Knight boss HUD, Dream Blessing choice and restart controls. | The HTML references game scripts; the requested `demos/dreambound/js/core/game.js` returned 404. UI markup is not evidence that play, combat or persistence works. No playable replacement is advertised. |
@@ -52,3 +52,15 @@ Four AI case studies now separately explain purpose, audience, an illustrative u
 Fairy V3 and MojoAX README descriptions were re-read through the GitHub connector for this revision. Dreambound's actual HTML and directory listing were inspected; its referenced `js/core/game.js` could not be read at that public path. This is a path-specific retrieval result, not a blanket assertion that every historical build is broken.
 
 The new workflow cards are expressly labelled as explanations or illustrative use flows, not recordings of completed application tasks. Diagrams are presentation graphics, not screenshots. Project-source limitations remain in both language versions. New files `src/case-ai-content.ts` and `src/case-archive-content.ts` hold the expanded content; `src/content.ts` retains summary, status and source disclosures.
+
+## October 2026 Mojo revision
+
+MojoClaw, Mojo Core and MojoAX entries were rewritten from the owner's private design and integration records (reviewed 2026-10-18) and from eleven screenshots of the running MojoClaw desktop dev build. Public copy summarises behaviour only: no private paths, commit ids, hostnames, switch names or keys.
+
+| Project | What supports the entry | What is NOT asserted |
+|---|---|---|
+| MojoClaw | Eight runtime captures (isolated preview, checkpoint card, inline table and timeline, conversation info, Plugins & Capabilities); owner design notes. | No public download, hosted deployment or sign-up. Rule files/skills/MCP import and web remote control are labelled in development; continuous tasks, the in-app browser and the phone control node are planned. |
+| Mojo Core | Captures of MojoClaw rendering Core-owned state; integration notes on durable runs, model catalog, identity hardening; the second-generation kernel in development behind switches. | No public endpoint or production-readiness claim. The new kernel is behind switches. Cloud deployment is planned. Fairy is not a Mojo Core client. |
+| MojoAX | Source review (surfaces, SSO/tenant calls); the MojoAX README's product definition. | In development after MojoClaw and Mojo Core; no runtime capture; governance features are product intent only. |
+
+Settings captures were cropped and identity fields masked before publication; the Settings → Models capture is withheld because model names are not public. Navigation columns were cropped out of every published capture.

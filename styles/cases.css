@@ -96,3 +96,24 @@ html[data-motion='reduced'] #case-dialog::backdrop{animation:none!important}
  .case-link-btn,.case-link-quiet{justify-content:center}
 }
 @media print{#case-dialog{display:none!important}}
+
+/* Mojo case extras: architecture diagram and labelled screenshot placeholders. */
+.mojo-arch{margin:26px 0 0;padding:16px;border:1px solid #afcaba1d;border-radius:14px;background:#0c1215}
+.mojo-arch figcaption{margin-top:10px;font:9px/1.7 var(--mono);color:#8da79a}
+.mojo-arch .arch-svg{display:block;width:100%;height:auto}
+.mojo-arch .arch-box rect{fill:#162027;stroke:#afcaba33;stroke-width:1.5}
+.mojo-arch .arch-box.is-focus rect{stroke:#e7b765;stroke-width:2.5}
+.mojo-arch .arch-box.is-later rect{fill:transparent;stroke-dasharray:6 6}
+.mojo-arch .arch-core>rect{fill:#111a1f}
+.mojo-arch .arch-title{fill:#e8f1ea;font:600 17px var(--sans,system-ui)}
+.mojo-arch .arch-sub{fill:#8da79a;font:13px var(--sans,system-ui)}
+.mojo-arch .arch-chip rect{fill:#1b262d;stroke:#afcaba26}
+.mojo-arch .arch-chip text{fill:#dceade;font:12.5px var(--sans,system-ui)}
+.mojo-arch .arch-line{stroke:#8da79a;stroke-width:1.6}.mojo-arch .arch-line.is-dashed{stroke-dasharray:5 5}.mojo-arch .arch-head{fill:#8da79a}
+.mojo-pending{margin-top:26px;padding-top:24px;border-top:1px solid #afcaba1d}
+.mojo-pending-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.mojo-pending .shot-placeholder{display:flex;flex-direction:column;justify-content:center;gap:8px;min-height:140px;padding:18px;border:1px dashed #afcaba40;border-radius:12px;background:repeating-linear-gradient(135deg,#121b20 0 12px,#152026 12px 24px);color:#8da79a}
+.mojo-pending .shot-placeholder-kind{font:9px/1.6 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:#e7b765}
+.mojo-pending .shot-placeholder strong{font-size:13px;font-weight:500;color:#dceade}
+.mojo-pending .shot-placeholder code{font:9px/1.5 var(--mono);overflow-wrap:anywhere}
+.mojo-card-links a{color:#5a4518}

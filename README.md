@@ -8,6 +8,15 @@ Shixu is included in the bilingual project catalogue and case reader with its pu
 
 Production: https://fairyllm.com/ from `babyzmz/mingzhe-portfolio-v2`. The existing `public/shixu/`, `public/CNAME` and manual Pages workflow are retained. Product data lives in `src/shixu-content.ts`; focused browser checks are in `tests/shixu.browser.py`.
 
+## Mojo product pages
+
+MojoClaw, Mojo Core and MojoAX now have product pages modelled on the Shixu site's structure, written in English: `public/mojo/` (family overview, one page per product, status & roadmap, privacy & safety). Each product page covers the one-line positioning, the problems it addresses, capabilities with an explicit status (running in the dev build / in development / planned), an inline SVG architecture diagram, a typical run, privacy and safety, the stack, the roadmap and an FAQ.
+
+- Content: `src/mojo-content.ts` (pages, case-reader studies, links). Screenshots: `src/mojo-shots.ts`.
+- Rendering: `src/mojo-view.ts`. The HTML in `public/mojo/` is generated — run `npm run build:mojo` after editing; `tests/mojo.test.mjs` fails on stale pages, missing captures or broken links.
+- Eleven real captures from the MojoClaw desktop dev build live in `public/media/claw/` and also feed the case-reader galleries. Missing captures render as labelled placeholders that name the target file; the site never requests a missing image. The shot list is `docs/handoff/MOJO_SCREENSHOT_SHOTLIST.md`.
+- Mojo remains private: no source, download, endpoint or sign-up is linked. MojoAX is described as in development after MojoClaw and Mojo Core.
+
 ## v2.1 — 项目展开与说明更新
 
 Both “deeper look” and archive cards now open the same animated case-study reader. Opening follows the clicked source with opacity/scale/position motion; close, Escape and backdrop finish an exit transition before returning to the page. Inside the reader are a sticky chapter index, reading progress, section/card reveals, animated glossary expansion, previous/next project transitions and EN/ZH switching. Background 3D rendering is suspended during reading and resumed afterwards. Reduced-motion preferences are honoured.
@@ -85,11 +94,11 @@ node --test tests/bundle.test.mjs
 | `public/documents/` | User-supplied current CV PDF |
 | `tests/` | Pure-state, content, offline-bundle and browser checks |
 
-Five 3D stations: original optical sculpture → Fairy-inspired optical eye → MojoCore layers → MojoClaw/MojoAX panels → development-method nodes. The stations share one physical scene with decreasing Z coordinates. The copy stays as readable DOM text, not text baked into canvas.
+Five 3D stations: original optical sculpture → Fairy-inspired optical eye → Mojo Core layers → MojoClaw/MojoAX panels → development-method nodes. The stations share one physical scene with decreasing Z coordinates. The copy stays as readable DOM text, not text baked into canvas.
 
 ## Source boundaries
 
-Fairy has its own Core. MojoCore is the shared foundation for MojoClaw and MojoAX; the site does not depict Fairy as a MojoCore client. Private Mojo source code and internal repository paths are not distributed.
+Fairy has its own Core. Mojo Core is the shared foundation for MojoClaw and MojoAX; the site does not depict Fairy as a Mojo Core client. Private Mojo source code and internal repository paths are not distributed.
 
 The earlier portfolio's five non-Fairy projects are retained. **Their original runtime files are not bundled here.** In particular, Dreambound links to its original source directory rather than a newly invented playable replacement. Old server-backed and native applications are described as project records, not embedded working apps. See `docs/CONTENT_AUDIT.md`.
 

@@ -11,8 +11,13 @@ test('registry covers every registered project id', () => {
  for (const id of PROJECT_IDS) assert.ok(Array.isArray(linksFor(id)));
 });
 
-test('mojo projects carry no public links', () => {
- for (const id of ['core', 'claw', 'ax']) assert.equal(linksFor(id).length, 0, id);
+test('mojo projects link only to their own product page, never to source, demo or download', () => {
+ for (const id of ['core', 'claw', 'ax']) {
+  const groups = linksByKind(id);
+  assert.equal(groups.website.length, 1, id);
+  assert.equal(groups.website[0].url, `./mojo/${id}/`);
+  for (const kind of ['source', 'demo', 'download', 'record']) assert.equal(groups[kind].length, 0, `${id} ${kind}`);
+ }
 });
 
 test('fairy has a public approved source link', () => {

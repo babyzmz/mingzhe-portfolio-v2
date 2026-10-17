@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#121418"><meta name="description" content="Privacy and safety principles of the Mojo products, and how this site handles screenshots.">
+<title>Mojo — Privacy &amp; safety</title>
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../site.css">
+<script defer src="../site.js"></script>
+</head>
+<body class="page-security">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><a class="wordmark" href="../" aria-label="Mojo product family"><span class="mark" aria-hidden="true">M</span><span>Mojo</span></a><nav aria-label="Product pages"><a href="../claw/">MojoClaw</a><a href="../core/">Mojo Core</a><a href="../ax/">MojoAX</a><a href="../roadmap/">Roadmap</a><a href="../security/" aria-current="page">Privacy &amp; safety</a></nav><a class="header-action" href="../../">Portfolio <span aria-hidden="true">↗</span></a></header>
+<main id="main">
+
+<section class="docs"><p class="eyebrow">Privacy &amp; safety</p><h1>Strict, with few interruptions.</h1><p class="lead">Security may be strict, but confirmations must be rare. Every feature is designed against a confirmation budget: work inside the project proceeds on its own, and crossing a boundary asks once for that scope.</p>
+<section class="docs-block"><h2>MojoClaw</h2><h3>Local stays local</h3><p>Bound-folder files are read on the device. With the strict local data policy, Core receives digests instead of content, and a local tool is never moved to the cloud to finish a task.</p><h3>A sandbox that does not quietly give up</h3><p>&quot;Work inside the project&quot; edits only that folder; commands run in the native macOS sandbox with the network off by default. A sandbox failure stops the step rather than running it unsandboxed.</p><h3>A confirmation budget</h3><p>Inside the project nothing asks. Crossing a boundary — a new folder, outbound data, a dangerous tool — asks once, and the answer covers that scope.</p><h3>Remote control per thread</h3><p>Each thread starts with remote control off. Only the computer where the thread lives can turn it on or widen it; the web can use it, not change it.</p><h3>Memory you can see</h3><p>Memories are stored by Core, listed with their source chat, and can be deleted or switched off. Suggested memories wait for your confirmation.</p></section><section class="docs-block"><h2>Mojo Core</h2><h3>Identity from the session only</h3><p>Self-asserted identity headers are rejected; tenant and actor come from the authenticated session.</p><h3>Grants bound to scope</h3><p>Approval covers a named server, account, tool set, data scope and side effects. Wider scope asks again; the same scope does not.</p><h3>No silent fallback</h3><p>An offline device makes its tools unavailable. Core does not reroute local material through the cloud to finish a task.</p><h3>Measured, not assumed</h3><p>Cache savings and costs are reported from provider usage fields per call, with unknowns recorded as unknown.</p><h3>History is append-only</h3><p>Published migrations are never edited; rollbacks are new migrations.</p></section><section class="docs-block"><h2>MojoAX</h2><h3>Same authority as MojoClaw</h3><p>Identity, tenant and permissions come from Core sessions, not from the client.</p><h3>Nothing claimed beyond the last review</h3><p>Scaffolds, unverified integrations and roadmap items are not described as delivered.</p></section>
+<section class="docs-block"><h2>About this site</h2><p>Screenshots were captured from the owner's development build. Navigation columns with conversation titles and the account are cropped out; projects shown are examples. Captures that still show an email address are not published until redacted. No analytics or trackers run on these pages.</p></section></section>
+</main>
+<nav class="support-nav" aria-label="More"><a href="../">Mojo family</a><a href="../roadmap/">Status &amp; roadmap</a><a href="../security/">Privacy &amp; safety</a><a href="../../#work">All projects</a></nav>
+<footer class="site-footer"><p>Mojo is a private project by Mingzhe Zhang. Screenshots come from the running development build with navigation cropped; example projects only. No public download is offered.</p></footer>
+</body>
+</html>

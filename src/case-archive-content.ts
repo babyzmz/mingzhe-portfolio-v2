@@ -163,7 +163,7 @@ export const archiveCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "“监测”这个名称不能自动证明定时任务、历史快照、通知通道或长期运行可靠性。"
         }
       ],
-      "relationship": "这是独立的早期桌面界面探索。现有材料未说明它已经接入 Fairy、MojoCore 或其他自动化运行服务。",
+      "relationship": "这是独立的早期桌面界面探索。现有材料未说明它已经接入 Fairy、Mojo Core 或其他自动化运行服务。",
       "terms": [
         {
           "title": "Electron",
@@ -220,7 +220,7 @@ export const archiveCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "“Monitoring” does not establish scheduling, stored snapshots, notifications or reliable long-running operation."
         }
       ],
-      "relationship": "An independent earlier desktop-interface exploration. No integration with Fairy, MojoCore or another automation service is established.",
+      "relationship": "An independent earlier desktop-interface exploration. No integration with Fairy, Mojo Core or another automation service is established.",
       "terms": [
         {
           "title": "Electron",
@@ -395,7 +395,7 @@ export const archiveCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "AI 生成的塔罗叙述不作为预测准确性、健康、法律或财务建议的证明。"
         }
       ],
-      "relationship": "独立的早期生成式 Web 应用记录，不是 Fairy 内置技能，也没有资料证明它已接入 MojoCore。",
+      "relationship": "独立的早期生成式 Web 应用记录，不是 Fairy 内置技能，也没有资料证明它已接入 Mojo Core。",
       "terms": [
         {
           "title": "生成式 AI",
@@ -452,7 +452,7 @@ export const archiveCases: Record<string, Record<Locale, CaseStudy>> = {
           "body": "Generated tarot narratives do not establish predictive accuracy or provide medical, legal or financial guidance."
         }
       ],
-      "relationship": "An independent earlier generative Web application, not a documented Fairy skill or a verified MojoCore integration.",
+      "relationship": "An independent earlier generative Web application, not a documented Fairy skill or a verified Mojo Core integration.",
       "terms": [
         {
           "title": "Generative AI",

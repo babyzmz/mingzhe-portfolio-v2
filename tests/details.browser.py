@@ -129,7 +129,7 @@ with sync_playwright() as pw:
   page.locator('#fairy [data-case]').click();settled(page)
   page.evaluate('''()=>{ const d=document.querySelector('#case-dialog'); for(let i=0;i<3;i++)d.querySelector('[data-case-next="core"]').click(); }''')
   settled(page)
-  check('rapid next clicks leave one final case and no stale transition',page.locator('#dialog-title').inner_text()=='MojoCore' and page.locator('.case-sheet').count()==1)
+  check('rapid next clicks leave one final case and no stale transition',page.locator('#dialog-title').inner_text()=='Mojo Core' and page.locator('.case-sheet').count()==1)
   page.mouse.click(20,500);page.locator('#case-dialog').wait_for(state='hidden')
   check('backdrop click runs the close path',page.evaluate('document.body.style.overflow')=='')
   page.locator('[data-evidence]').first.click();settled(page)

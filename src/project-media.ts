@@ -1,4 +1,5 @@
 import {shixuMedia} from './shixu-content.js';
+import {mojoCapturedMedia} from './mojo-shots.js';
 /**
  * Registry of approved public project media and its selection/validation rules.
  *
@@ -37,6 +38,8 @@ export const EVIDENCE_KIND_LABELS: Record<EvidenceKind, Localized> = {
 const D = '2026-09-19';
 export const projectMedia: ProjectMedia[] = [
  ...shixuMedia,
+ // MojoClaw / Mojo Core captures come from the shot manifest (src/mojo-shots.ts).
+ ...mojoCapturedMedia(),
  // ── Fairy: native Tauri/React desktop (rail blurred in the video) ──────────
  {
   id: 'fairy-permissions', projectId: 'fairy', type: 'screenshot',

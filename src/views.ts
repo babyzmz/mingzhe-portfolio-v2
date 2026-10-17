@@ -7,6 +7,8 @@ import type {ProjectId,LinkKind} from './project-types.js';
 import {linksByKind,LINK_KIND_LABELS} from './project-links.js';
 import {coverFor,gallery} from './project-media.js';
 import {coverFigure,gallerySection} from './media-view.js';
+import {mojoCaseExtras} from './mojo-view.js';
+const MOJO_IDS=['claw','core','ax'];
 export const esc=(s:string):string=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export const arrow='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5"/></svg>';
 const down='<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v16m-6-6 6 6 6-6" stroke="currentColor" stroke-width="1.4"/></svg>';
@@ -41,7 +43,7 @@ function projectLinksHtml(p:Project,lang:Locale):string{
   const note=restricted&&link.accessNote?`<span class="case-link-note">${esc(link.accessNote[lang])}</span>`:'';
   const cls=kind==='record'?'case-link-quiet':'case-link-btn';
   const icon=kind==='download'?down:arrow;
-  return `<span class="case-link"><a class="${cls}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(p.id==='shixu'?link.label[lang]:LINK_KIND_LABELS[kind][lang])}${icon}</a>${note}</span>`;
+  return `<span class="case-link"><a class="${cls}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(p.id==='shixu'||kind==='website'?link.label[lang]:LINK_KIND_LABELS[kind][lang])}${icon}</a>${note}</span>`;
  }));
  if(blocks.length)return `<div class="case-link-list">${blocks.join('')}</div>`;
  return `<p class="private-note">${esc(t.private)} · ${lang==='zh'?'仅展示适合公开的项目说明':'Public-safe project description only'}</p>`;
@@ -49,12 +51,12 @@ function projectLinksHtml(p:Project,lang:Locale):string{
 export function card(p:Project,lang:Locale,index:number):string{
  const c=p[lang],t=text[lang];
  const grouped=linksByKind(p.id as ProjectId);
- const accessLabel=p.id==='shixu'&&grouped.demo.length?(lang==='zh'?'在线工作台':'Live workbench'):grouped.source.length?t.publicSource:grouped.record.length?t.record:t.private;
+ const accessLabel=MOJO_IDS.includes(p.id)?(lang==='zh'?'私有 · 开发中':'Private · in development'):p.id==='shixu'&&grouped.demo.length?(lang==='zh'?'在线工作台':'Live workbench'):grouped.source.length?t.publicSource:grouped.record.length?t.record:t.private;
  return `<article class="project-card" data-card-light data-project-card="${p.id}" data-kind="${p.kind}">
  <span class="card-edge-light" aria-hidden="true"></span><span class="card-spotlight" aria-hidden="true"></span>
  <button class="project-art art-${p.id}${(!isSingleFileEdition()&&coverFor(p.id as ProjectId))?' has-real-cover':''}" data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}"><span class="art-index">${String(index+1).padStart(2,'0')}</span>${cardArt(p,lang)}<span class="art-open">${arrow}</span></button>
  <div class="project-topline"><span>${esc(c.category)}</span><span>${p.kind==='ai'?'↗':'↳'}</span></div><h3><button data-case="${p.id}">${p.id==='shixu'&&!isSingleFileEdition()?'<img class="shixu-project-icon" src="./shixu/assets/icon.svg" width="28" height="28" alt="">':''}${esc(p.name)}</button></h3>
- <p>${esc(c.summary)}</p>${p.id==='shixu'?`<div class="shixu-card-links">${[['./shixu/',lang==='zh'?'官网':'Website'],['./shixu/workbench/',lang==='zh'?'网页工作台':'Workbench'],['./shixu/download/',lang==='zh'?'Windows 下载':'Windows download']].map(([url,label])=>`<a href="${url}">${label}${arrow}</a>`).join('')}</div>`:''}<div class="project-bottom"><span>${esc(accessLabel)}</span><button data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}">${plus}</button></div></article>`;
+ <p>${esc(c.summary)}</p>${MOJO_IDS.includes(p.id)?`<div class="shixu-card-links mojo-card-links"><a href="./mojo/${p.id}/">${lang==='zh'?'产品介绍':'Product page'}${arrow}</a></div>`:''}${p.id==='shixu'?`<div class="shixu-card-links">${[['./shixu/',lang==='zh'?'官网':'Website'],['./shixu/workbench/',lang==='zh'?'网页工作台':'Workbench'],['./shixu/download/',lang==='zh'?'Windows 下载':'Windows download']].map(([url,label])=>`<a href="${url}">${label}${arrow}</a>`).join('')}</div>`:''}<div class="project-bottom"><span>${esc(accessLabel)}</span><button data-case="${p.id}" aria-label="${esc(p.name+' — '+t.detail)}">${plus}</button></div></article>`;
 }
 export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  ssrSingleFile=opts.singleFile===true;
@@ -63,7 +65,7 @@ export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  const btn=(id:string,label=t.case)=>`<button class="text-button" data-case="${id}">${esc(label)}<span>${arrow}</span></button>`;
  return `<a class="skip-link" href="#work">${t.skip}</a>
  <header class="header"><a class="brand" href="#home" aria-label="Mingzhe Zhang — ${t.back}"><span class="nav-mark">${circularMark}${mark}</span><span>MINGZHE<span class="brand-dot">.</span></span></a>
- <nav class="main-nav" aria-label="${lang==='en'?'Main navigation':'主导航'}"><a href="./shixu/">${lang==='zh'?'拾序':'Shixu'}</a><a href="#work">${t.navWork}</a><a href="#method">${t.navMethod}</a><a href="#about">${t.navAbout}</a></nav>
+ <nav class="main-nav" aria-label="${lang==='en'?'Main navigation':'主导航'}"><a href="./shixu/">${lang==='zh'?'拾序':'Shixu'}</a><a href="./mojo/">Mojo</a><a href="#work">${t.navWork}</a><a href="#method">${t.navMethod}</a><a href="#about">${t.navAbout}</a></nav>
  <div class="header-actions"><button class="language-toggle" data-locale aria-label="${lang==='en'?'Switch to Chinese':'切换为英文'}"><span class="${lang==='en'?'selected':''}">EN</span><i>/</i><span class="${lang==='zh'?'selected':''}">中</span></button><a class="contact-pill" href="#contact">${t.navContact}<span>↗</span></a><button class="menu-toggle" data-menu aria-label="${t.menu}" aria-expanded="false"><i></i><i></i></button></div></header>
  <main><div id="journey" class="journey">
  <section class="chapter hero" id="home" data-scene="0"><div class="chapter-inner">
@@ -81,7 +83,7 @@ export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  <div class="section-baseline"><span>FAIRY</span><span>REACT / TAURI / PYTHON</span></div>
  </div></section>
  <section class="chapter" id="core" data-scene="2"><div class="chapter-inner"><div class="chapter-copy"><p class="eyebrow">${t.coreKicker}</p><h2 data-fill="neutral">${t.coreA}<br><span class="silver-text">${t.coreB}</span></h2><p class="chapter-desc" data-word-reveal>${t.coreDesc}</p><div class="core-features"><span><b>01</b>${t.coreTag1}</span><span><b>02</b>${t.coreTag2}</span><span><b>03</b>${t.coreTag3}</span></div>${btn('core')}<p class="boundary-note">${t.coreBoundary}</p></div>
- <div class="layer-labels" aria-hidden="true"><span>CAPABILITY LAYER</span><span>EXECUTION LAYER</span><span>RECOVERY LAYER</span></div><div class="section-baseline"><span>MOJOCORE</span><span>${t.diagram}</span></div></div></section>
+ <div class="layer-labels" aria-hidden="true"><span>CAPABILITY LAYER</span><span>EXECUTION LAYER</span><span>RECOVERY LAYER</span></div><div class="section-baseline"><span>MOJO CORE</span><span>${t.diagram}</span></div></div></section>
  <section class="chapter" id="mojo" data-scene="3"><div class="chapter-inner"><div class="chapter-copy"><p class="eyebrow">${t.mojoKicker}</p><h2 data-fill="amber">${t.mojoA}<br><span class="accent-amber">${t.mojoB}</span></h2><p class="chapter-desc" data-word-reveal>${t.mojoDesc}</p>
  <div class="workbench-links"><button data-case="claw"><span class="product-monogram">M/</span><span><b>MojoClaw</b><small>${t.clawLabel}</small></span>${arrow}</button><button data-case="ax"><span class="product-monogram amber">AX</span><span><b>MojoAX</b><small>${t.axLabel}</small></span>${arrow}</button></div>
  </div><div class="section-baseline"><span>MOJOCLAW / MOJOAX</span><span>${t.diagram}</span></div></div></section>
@@ -105,7 +107,7 @@ export function renderSite(lang:Locale,opts:{singleFile?:boolean}={}):string{
  <article><span>04</span><h4>${t.skills4}</h4><p>Model APIs · MCP · Skills<br>RAG · STT / TTS · SSE</p></article></div><p class="foundations">${lang==='en'?'Additional learning foundations':'其他学习基础'}: HTML / CSS · Vue.js · Java · PHP · ${lang==='en'?'Database design · Microsoft Office':'数据库设计 · Microsoft Office'}</p></div></section>
  <section class="contact-section" id="contact"><div class="section-wrap"><div class="contact-top"><p class="eyebrow">${t.contactKicker}</p><span class="contact-spark" aria-hidden="true">✳</span></div>${renderContactStream(t.contactA,t.contactB,lang)}<div class="contact-bottom"><p>${t.contactDesc}</p><div><a class="email-link" href="mailto:${profile.email}" aria-label="${t.contactLink}">${profile.email}${arrow}</a><div class="contact-small"><button data-copy>${t.copy}</button><a href="${profile.github}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="${profile.resume}" download="Mingzhe_Zhang_Resume.pdf">${t.resume} ↓</a></div></div></div></div></section>
  </main><footer class="footer"><div class="footer-bar"><a class="brand" href="#home">${mark}<span>MINGZHE.</span></a><p>${t.footer}</p><button data-evidence>${t.evidence}</button><a href="#home" class="back-top" aria-label="${t.back}">↑</a></div></footer>
- <aside class="chapter-rail" aria-label="${t.index}">${['home','fairy','core','mojo','method'].map((id,i)=>`<a href="#${id}" data-rail="${i}" aria-label="${['Intro','Fairy','MojoCore','MojoClaw & MojoAX',t.navMethod][i]}"><span>${String(i).padStart(2,'0')}</span><i></i></a>`).join('')}</aside>
+ <aside class="chapter-rail" aria-label="${t.index}">${['home','fairy','core','mojo','method'].map((id,i)=>`<a href="#${id}" data-rail="${i}" aria-label="${['Intro','Fairy','Mojo Core','MojoClaw & MojoAX',t.navMethod][i]}"><span>${String(i).padStart(2,'0')}</span><i></i></a>`).join('')}</aside>
  <div class="motion-dock"><span class="render-status"><i></i><span data-render-label>${t.live}</span></span><button data-motion aria-label="${t.motionOn}" aria-pressed="false"><span class="pause-icon"><i></i><i></i></span><span class="motion-label">${t.motionOn}</span></button></div>`;
  }finally{ssrSingleFile=false;}
 }
@@ -127,7 +129,7 @@ export function renderCase(p:Project,lang:Locale):string{
  <nav class="case-toc" aria-label="${lang==='zh'?'项目内容目录':'Case study navigation'}"><div class="case-toc-links">${['overview','workflow','features','build','evidence'].map((key,i)=>`<button data-case-jump="${key}" ${i===0?'aria-current="location"':''}><span>0${i+1}</span>${l[key]}</button>`).join('')}</div><span class="case-reading">${l.read}<b data-reading-label>00%</b></span><div class="case-progress"><i data-reading-bar></i></div></nav>
  <article class="case-article">
   <section class="case-overview case-section">
-   ${sectionTitle('01',l.what)}<p class="case-body-lead" data-reveal>${esc(d.purpose)}</p><div class="case-audience" data-reveal><span>${l.for}</span><p>${esc(d.audience)}</p></div>${p.id==='shixu'?`<div class="shixu-case-entry">${links}</div>${isSingleFileEdition()?'':`<details class="shixu-live-preview" data-shixu-preview><summary>${lang==='zh'?'在这里打开网页工作台':'Open the web workbench here'} ${arrow}</summary><iframe src="./shixu/workbench/" title="${lang==='zh'?'拾序网页工作台':'Shixu web workbench'}" loading="lazy" allow="clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe><p>${lang==='zh'?'网页助手使用本地规则；原生桌面组件在 Windows 端使用。':'The web assistant uses local rules. Native desktop widgets require Windows.'}</p></details>`}`:''}${mediaGallery}
+   ${sectionTitle('01',l.what)}<p class="case-body-lead" data-reveal>${esc(d.purpose)}</p><div class="case-audience" data-reveal><span>${l.for}</span><p>${esc(d.audience)}</p></div>${p.id==='shixu'?`<div class="shixu-case-entry">${links}</div>${isSingleFileEdition()?'':`<details class="shixu-live-preview" data-shixu-preview><summary>${lang==='zh'?'在这里打开网页工作台':'Open the web workbench here'} ${arrow}</summary><iframe src="./shixu/workbench/" title="${lang==='zh'?'拾序网页工作台':'Shixu web workbench'}" loading="lazy" allow="clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups allow-popups-to-escape-sandbox"></iframe><p>${lang==='zh'?'网页助手使用本地规则；原生桌面组件在 Windows 端使用。':'The web assistant uses local rules. Native desktop widgets require Windows.'}</p></details>`}`:''}${mediaGallery}${mojoCaseExtras(p.id,lang)}
   </section>
   <section class="case-section case-workflow" data-case-section="workflow">
    ${sectionTitle('02',l.flow)}<div class="case-scenario" data-reveal><span>${l.intent}</span><blockquote>${esc(d.scenario)}</blockquote></div>

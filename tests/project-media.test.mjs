@@ -8,6 +8,7 @@ import {
  validateProjectMedia, validateMediaRegistry
 } from '../.test-build/project-media.js';
 import {gallerySection,coverFigure} from '../.test-build/media-view.js';
+import {capturedShots} from '../.test-build/mojo-shots.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FLAG = '__PORTFOLIO_TEST_MEDIA__';
@@ -42,10 +43,14 @@ const diagram = {...base, id: 'diagram1', projectId: 'core', type: 'diagram',
 test('production registry holds reviewed, validated evidence and never fabricates Mojo media', () => {
  assert.ok(projectMedia.length > 0, 'real captures were approved and registered');
  assert.deepEqual(validateMediaRegistry(), []);
+ // Mojo media comes only from captured entries in the shot manifest.
  for (const id of ['core', 'claw', 'ax']) {
-  assert.equal(mediaFor(id).length, 0, `${id} keeps labelled illustrations only until source is found`);
-  assert.equal(coverFor(id), null);
+  const captured = capturedShots(id).map(s => s.id).sort();
+  assert.deepEqual(mediaFor(id).map(m => m.id).sort(), captured, `${id} media mirrors captured shots`);
+  for (const item of mediaFor(id)) assert.equal(item.evidenceKind, 'runtime-recorded');
+  assert.equal(coverFor(id) === null, captured.length === 0);
  }
+ assert.equal(mediaFor('ax').length, 0, 'MojoAX has no runtime capture yet');
  for (const id of ['fairy', 'dreambound', 'converter', 'tarot', 'webchange', 'goodnight']) {
   assert.ok(coverFor(id), `${id} has a real cover`);
   assert.equal(hasRealEvidence(id), true);

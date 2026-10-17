@@ -1,4 +1,5 @@
 import {shixuLinks} from './shixu-content.js';
+import {mojoLinks} from './mojo-content.js';
 /**
  * Registry of public project links plus URL-safety and visibility rules.
  *
@@ -34,9 +35,9 @@ export const projectLinks: Record<ProjectId, ProjectLink[]> = {
   }
  ],
  shixu: shixuLinks,
- core: [],
- claw: [],
- ax: [],
+ core: mojoLinks.core,
+ claw: mojoLinks.claw,
+ ax: mojoLinks.ax,
  dreambound: [
   {
    kind: 'demo',
@@ -110,7 +111,7 @@ export const projectLinks: Record<ProjectId, ProjectLink[]> = {
 };
 
 /** Same-site routes that a relative public URL is allowed to point at. */
-export const ALLOWED_RELATIVE_PREFIXES = ['media/', 'documents/', 'demos/', 'assets/', 'shixu/'];
+export const ALLOWED_RELATIVE_PREFIXES = ['media/', 'documents/', 'demos/', 'assets/', 'shixu/', 'mojo/'];
 
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
 

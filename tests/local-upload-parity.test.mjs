@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {profile,projects,text} from '../.test-build/content.js';
 import {aiCases} from '../.test-build/case-ai-content.js';
+import {caseStudies} from '../.test-build/case-content.js';
 import {archiveCases} from '../.test-build/case-archive-content.js';
 import {caseLabels} from '../.test-build/case-labels.js';
 import {projectLinks} from '../.test-build/project-links.js';
@@ -13,10 +14,16 @@ const value=structuredClone({profile,projects,text,aiCases,archiveCases,caseLabe
 value.projects=value.projects.filter(p=>p.id!=='shixu');
 delete value.links.shixu;
 value.media=value.media.filter(item=>item.projectId!=='shixu');
+// MojoClaw / MojoCore / MojoAX were revised by the owner in October 2026 (src/mojo-content.ts,
+// src/mojo-shots.ts). They are checked by tests/mojo.test.mjs instead of this snapshot.
+const MOJO=['core','claw','ax'];
+value.projects=value.projects.filter(p=>!MOJO.includes(p.id));
+for(const id of MOJO){delete value.aiCases[id];delete value.links[id];}
+value.media=value.media.filter(item=>!MOJO.includes(item.projectId));
 for(const l of ['en','zh']){value.text[l].archiveDesc=l==='en'?'Four ongoing AI projects. Five earlier experiments. A record of learning by making.':'四个持续开发的 AI 项目，五个早期探索。记录在实践中学习的过程。';value.text[l].ai=l==='en'?'AI systems':'AI 系统';}
 // Only the owner's new positioning and the misplaced stream labels may differ.
-for(const p of value.projects)if(['fairy','claw'].includes(p.id))for(const l of ['en','zh']){delete p[l].category;delete p[l].summary;}
-for(const id of ['fairy','claw'])for(const l of ['en','zh'])for(const k of ['tagline','purpose'])delete value.aiCases[id][l][k];
+for(const p of value.projects)if(p.id==='fairy')for(const l of ['en','zh']){delete p[l].category;delete p[l].summary;}
+for(const l of ['en','zh'])for(const k of ['tagline','purpose'])delete value.aiCases.fairy[l][k];
 for(const l of ['en','zh'])for(const k of ['fairyDesc','clawLabel','mojoDesc','streamPrefix','streamItems'])delete value.text[l][k];
 function norm(v){return Array.isArray(v)?v.map(norm):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,norm(v[k])])):v;}
 const hashes=JSON.parse(fs.readFileSync(new URL('./fixtures/local-upload-hashes.json',import.meta.url)));
@@ -25,7 +32,7 @@ test('positioning is consistent and remains separate from release status',()=>{
  const fairy=projects.find(p=>p.id==='fairy'),claw=projects.find(p=>p.id==='claw');
  assert.match(fairy.zh.summary,/个人终端/);assert.match(fairy.zh.summary,/目标/);
  assert.match(fairy.en.summary,/personal devices/i);
- for(const l of ['en','zh']){assert.match(claw[l].summary,/SaaS/);assert.match(aiCases.claw[l].tagline,/SaaS/);}
+ for(const l of ['en','zh']){assert.match(claw[l].summary,/SaaS/);assert.match(caseStudies.claw[l].tagline,/SaaS/);}
  assert.match(claw.zh.summary,/网页.*桌面/);assert.match(claw.en.summary,/web.*desktop/i);
  assert.match(fairy.en.status,/development/);assert.match(claw.en.status,/development/);
 });
