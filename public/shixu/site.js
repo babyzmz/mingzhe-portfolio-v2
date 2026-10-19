@@ -6,6 +6,10 @@
   // Chinese lives in the HTML; English replaces tagged content so static pages stay readable without JS.
   const go=text=>text+' <span aria-hidden="true">↗</span>',down=text=>text+' <span aria-hidden="true">↓</span>';
   const en={
+    'android.h':'Shixu,<br>on your phone.',
+    'android.p':'Android 0.1.0 small-group test build · about 3 MB. The shared web workbench with account sync, optional system calendar integration and local reminders.',
+    'android.download':down('Download Android test build'),
+    'android.note':'Android 7+ with a recent System WebView. System calendar and lock-screen reminders still need real-device testing. Background cloud push is not connected; desktop changes reach the phone when the app opens and syncs.',
     'home.title':'Shixu — Pick up the pieces. Shape your day.',
     'home.description':'Shixu gathers scattered to-dos, events and notes in one place. Windows desktop widgets and a web workbench keep your plans with you.',
     'download.title':'Download Shixu — Windows desktop and web workbench',
