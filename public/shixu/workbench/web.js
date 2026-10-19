@@ -1,6 +1,6 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.13-android1';
-import {installAccount} from './account-ui.mjs?v=0.4.13-android1';
-import {installMotion} from './motion.mjs?v=0.4.13-android1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.14-1';
+import {installAccount} from './account-ui.mjs?v=0.4.14-1';
+import {installMotion} from './motion.mjs?v=0.4.14-1';
 installMotion();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
@@ -54,7 +54,7 @@ async function sync(){
  const merged=merge(before,local,remote);if(!cloud.envelope||canonical(merged)!==canonical(remote))cloud=await request('PUT',await encrypt(merged,pair.token),cloud.revision);
  localStorage.setItem('shixu-sync-remote',JSON.stringify(merged));const final=merge(local,app.cloudDoc(),merged);applying=true;try{app.applyDoc(final);}finally{applying=false;}
  localStorage.setItem('shixu-sync-baseline',JSON.stringify(merged));status='已同步 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});lastSync=Date.now();
- }catch(e){if(e.conflict){paused=true;localStorage.setItem('shixu-sync-paused','true');}status='同步未完成：'+e.message;app.toast(status);}finally{busy=false;repaintStatus();}
+ }catch(e){if(e.conflict){paused=true;localStorage.setItem('shixu-sync-paused','true');}status='同步未完成：'+e.message;app.toast(status);}finally{busy=false;repaintStatus();window.dispatchEvent(new Event('shixu-sync-finished'));}
 }
 document.addEventListener('click',async e=>{
  const button=e.target.closest('[data-web-action]');if(!button)return;const action=button.dataset.webAction;e.preventDefault();
