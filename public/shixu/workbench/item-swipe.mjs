@@ -6,8 +6,8 @@ export function installItemSwipe(app){
  const modal=()=>!!document.querySelector('#modal-root .modal,dialog[open],.control-sheet[open]');
  const rowSelector='[data-swipe-item],.task-row[data-item]';
  const itemOf=row=>app.getState().items.find(i=>i.id===(row.dataset.swipeItem||row.dataset.item));
- const leftAction=item=>item?.type==='task'&&!item.dailyTarget?{action:item.status==='done'?'restore':'complete',label:item.status==='done'?'恢复':'完成'}:item&&item.type!=='note'?{action:'record',label:'记录一次'}:null;
- const threshold=(row,side)=>Math.min(row.clientWidth-24,Math.max(side==='left'?112:176,row.clientWidth*(side==='left'?.58:.68)));
+ const primaryAction=item=>item?.type==='task'&&!item.dailyTarget?{action:item.status==='done'?'restore':'complete',label:item.status==='done'?'恢复':'完成'}:item&&item.type!=='note'?{action:'record',label:'记录一次'}:null;
+ const threshold=(row,side)=>Math.min(row.clientWidth-24,Math.max(side==='left'?176:112,row.clientWidth*(side==='left'?.68:.58)));
  function rails(row){return [...row.querySelectorAll(':scope > .swipe-rail')];}
  function accessible(row,target){for(const rail of rails(row)){const visible=rail.dataset.side===(target<0?'left':target>0?'right':'');rail.setAttribute('aria-hidden',String(!visible));for(const b of rail.querySelectorAll('button'))b.disabled=!visible;}}
  function draw(row,x,travel=0){row.style.setProperty('--swipe-offset',x+'px');row.dataset.swipeOffset=String(x);for(const rail of rails(row)){const gate=threshold(row,rail.dataset.side),armed=Math.sign(travel)===Math.sign(x)&&rail.dataset.side===(x<0?'left':'right')&&Math.abs(x)>=gate&&Math.abs(travel)>=gate;rail.classList.toggle('swipe-armed',armed);}}
@@ -33,8 +33,8 @@ export function installItemSwipe(app){
   if(row.classList.contains('swipe-ready'))return;
   row.classList.add('swipe-ready');row.style.setProperty('--swipe-button-width',Math.min(72,(row.clientWidth-24)/2)+'px');draw(row,0);
   const add=(side,commands,label)=>{const rail=document.createElement('div');rail.className='swipe-rail swipe-'+side;rail.dataset.side=side;rail.setAttribute('role','group');rail.setAttribute('aria-label','事项快捷操作');rail.setAttribute('aria-hidden','true');for(const[action,text]of commands){const button=document.createElement('button');button.type='button';button.className='swipe-action '+(action==='delete-item'?'swipe-delete':'');button.dataset.action=action;button.dataset.id=item.id;button.textContent=text;button.setAttribute('aria-label',text+'：'+item.title);button.disabled=true;rail.append(button);}const cue=document.createElement('span');cue.className='swipe-full-cue';cue.textContent='松开'+label;cue.setAttribute('aria-hidden','true');rail.append(cue);row.append(rail);};
-  add('right',[['edit','编辑'],['delete-item','删除']],'删除');
-  const left=leftAction(item);if(left)add('left',[[left.action==='record'?'record-completion':'complete',left.label]],left.label);
+  add('left',[['edit','编辑'],['delete-item','删除']],'删除');
+  const primary=primaryAction(item);if(primary)add('right',[[primary.action==='record'?'record-completion':'complete',primary.label]],primary.label);
  }
  listen(document,'pointerdown',event=>{
   suppressUntil=0;
@@ -51,7 +51,7 @@ export function installItemSwipe(app){
   if(opened&&opened!==row)close();
   const wasMoving=motion?.row===row;const base=Number(row.dataset.swipeOffset)||0;if(wasMoving)stop();
   prepare(row,item);
-  drag={row,id:event.pointerId,startX:event.clientX,startY:event.clientY,base,lastX:event.clientX,lastTime:event.timeStamp,v:0,captured:false,left:leftAction(item),snapshot:JSON.stringify(item)};
+  drag={row,id:event.pointerId,startX:event.clientX,startY:event.clientY,base,lastX:event.clientX,lastTime:event.timeStamp,v:0,captured:false,primary:primaryAction(item),snapshot:JSON.stringify(item)};
  },{capture:true,passive:true});
  listen(document,'pointermove',event=>{
   const d=drag;if(!d||d.id!==event.pointerId)return;
@@ -59,23 +59,23 @@ export function installItemSwipe(app){
   if(!d.captured){
    if(Math.abs(dy)>8&&Math.abs(dy)>Math.abs(dx)){close();return;}
    if(Math.abs(dx)<12||Math.abs(dx)<Math.abs(dy)*1.4)return;
-   if(dx<0&&!d.left&&d.base<=0){close();return;}
+   if(dx>0&&!d.primary&&d.base>=0){close();return;}
    d.captured=true;d.row.classList.add('is-swiping');try{d.row.setPointerCapture(d.id);}catch{}
   }
   if(event.cancelable)event.preventDefault();
   const elapsed=event.timeStamp-d.lastTime;if(elapsed>0)d.v=Math.max(-1.5,Math.min(1.5,(event.clientX-d.lastX)/elapsed));d.lastTime=event.timeStamp;d.lastX=event.clientX;
-  const limit=Math.max(0,d.row.clientWidth-16);draw(d.row,Math.max(d.left?-limit:0,Math.min(limit,d.base+dx)),dx);
+  const limit=Math.max(0,d.row.clientWidth-16);draw(d.row,Math.max(-limit,Math.min(d.primary?limit:0,d.base+dx)),dx);
  },{capture:true,passive:false});
  listen(document,'pointerup',event=>{
   points.delete(event.pointerId);const d=drag;if(!d||d.id!==event.pointerId)return;
   if(!d.captured){release();if(!opened)reset(d.row);return;}
   const offset=Number(d.row.dataset.swipeOffset)||0,side=offset<0?'left':'right';
-  const travel=d.lastX-d.startX,gate=threshold(d.row,side),full=Math.abs(offset)>=gate&&Math.abs(travel)>=gate&&Math.sign(travel)===Math.sign(offset)&&(side==='right'||d.left);
-  const projected=offset+d.v*80,target=projected<-32&&d.left?-Math.min(72,d.row.clientWidth-24):projected>50?Math.min(144,d.row.clientWidth-24):0;
+  const travel=d.lastX-d.startX,gate=threshold(d.row,side),full=Math.abs(offset)>=gate&&Math.abs(travel)>=gate&&Math.sign(travel)===Math.sign(offset)&&(side==='left'||d.primary);
+  const projected=offset+d.v*80,target=projected<-50?-Math.min(144,d.row.clientWidth-24):projected>32&&d.primary?Math.min(72,d.row.clientWidth-24):0;
   suppressUntil=performance.now()+450;suppressId=d.row.dataset.swipeItem||d.row.dataset.item;
   const current=itemOf(d.row),safe=d.row.isConnected&&!modal()&&JSON.stringify(current)===d.snapshot;
   release();
-  if(full&&safe){const id=current.id,action=side==='right'?'delete':d.left.action;close();reset(d.row);try{app.assistantPerform({action,id});}catch(error){app.toast(error?.message||'操作未完成');}return;}
+  if(full&&safe){const id=current.id,action=side==='left'?'delete':d.primary.action;close();reset(d.row);try{app.assistantPerform({action,id});}catch(error){app.toast(error?.message||'操作未完成');}return;}
   if(!safe){close();reset(d.row);return;}settle(d.row,target,d.v*1000);
  },{capture:true});
  listen(document,'pointercancel',event=>{points.delete(event.pointerId);close();},{capture:true});

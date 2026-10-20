@@ -406,10 +406,10 @@ html:has(body.modal-open) .header-orb,html:has(body.modal-open) .header-orb *{an
  .swipe-ready>:not(.swipe-rail){transform:translateX(var(--swipe-offset,0px));z-index:1;position:relative}
  .is-swiping>:not(.swipe-rail){will-change:transform;transition:none;user-select:none;-webkit-user-select:none}
  .swipe-rail{position:absolute!important;top:0;bottom:0;z-index:2;display:flex;overflow:hidden;transform:none!important}
- .swipe-left{right:0;width:max(0px,calc(-1 * var(--swipe-offset,0px)));justify-content:flex-end;background:var(--accent)}
- .swipe-right{left:0;width:max(0px,var(--swipe-offset,0px));background:var(--danger,#b84c55)}
+ .swipe-left{right:0;width:max(0px,calc(-1 * var(--swipe-offset,0px)));justify-content:flex-end;background:var(--danger,#b84c55)}
+ .swipe-right{left:0;width:max(0px,var(--swipe-offset,0px));background:var(--accent)}
  .swipe-action{flex:0 0 72px;min-width:72px;min-height:44px;border:0;border-radius:0;background:var(--accent);color:var(--bg);font:inherit;font-weight:600;touch-action:manipulation}
- .swipe-right .swipe-action{flex-basis:var(--swipe-button-width,72px);min-width:0}
+ .swipe-left .swipe-action{flex-basis:var(--swipe-button-width,72px);min-width:0}
  .swipe-action.swipe-delete{background:var(--danger,#b84c55);color:#fff}
  .swipe-action:focus-visible{outline:2px solid currentColor;outline-offset:-4px}
  .swipe-action:disabled{pointer-events:none}
