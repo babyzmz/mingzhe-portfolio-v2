@@ -1,6 +1,17 @@
 import {credentials,authProof,unwrapPassword,newMaster,newRecovery,validatePassword} from './account.mjs';
 import {authToken,empty} from './sync.mjs';
 const endpoint='https://api.fairyllm.com';
+// The packaged iOS page is local custom-scheme content, while account traffic remains HTTPS.
+// Never trust a CSS class, opaque URL.origin, or an arbitrary Capacitor-looking browser page.
+export function assertAccountContext({pageURL=globalThis.location?.href,capacitor=globalThis.Capacitor,apiURL=endpoint}={}){
+ let api,page;try{api=new URL(apiURL);page=new URL(pageURL);}catch{throw Error('账户连接地址不正确');}
+ if(api.protocol!=='https:'||api.origin!==endpoint||api.username||api.password||api.pathname!=='/'||api.search||api.hash)throw Error('账户服务必须使用受信任的 HTTPS 地址');
+ let nativeIOS=false;try{nativeIOS=capacitor?.isNativePlatform?.()===true&&capacitor?.getPlatform?.()==='ios';}catch{}
+ const trustedIOS=nativeIOS&&page.protocol==='capacitor:'&&page.hostname==='app.shixu.local'&&!page.port&&!page.username&&!page.password;
+ const loopbackDevelopment=page.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(page.hostname);
+ if(page.protocol!=='https:'&&!loopbackDevelopment&&!trustedIOS)throw Error('请通过 HTTPS 安全连接登录账户');
+ return api.origin;
+}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function installAccount(app,hooks){
  let account=null,busy=false;try{account=JSON.parse(localStorage.getItem('shixu-account'));if(account?.endpoint==='https://shixu-sync.zmz1998.workers.dev'){account.endpoint=endpoint;localStorage.setItem('shixu-account',JSON.stringify(account));}}catch{}
@@ -8,6 +19,7 @@ export function installAccount(app,hooks){
  const keys=['shixu-sync-baseline','shixu-sync-remote','shixu-sync-paused'];
  const cache=()=>{if(owner())localStorage.setItem('shixu-account-cache:'+owner(),JSON.stringify({state:app.getState(),meta:keys.map(k=>localStorage.getItem(k)),chat:hooks.chat()}));};
  async function auth(action,data,session){
+  assertAccountContext();
   const r=await fetch(endpoint+'/v2/auth/'+action,{method:'POST',headers:{'Content-Type':'application/json',...(session?{Authorization:'Bearer '+session}:{})},body:JSON.stringify(data),redirect:'error',signal:AbortSignal.timeout(20000)});
   const text=await r.text();if(text.length>16000)throw Error('账户响应过大');const v=JSON.parse(text);if(!r.ok)throw Error(v.error||'账户服务暂时不可用');return v;
  }
@@ -29,7 +41,7 @@ export function installAccount(app,hooks){
  }
  async function handle(action){
   if(!action.startsWith('account-'))return false;if(busy||hooks.busy())throw Error('请等待当前账户操作或同步结束');
-  if(location.protocol!=='https:'&&!['localhost','127.0.0.1','[::1]'].includes(location.hostname))throw Error('请通过 HTTPS 安全连接登录账户');
+  assertAccountContext();
   action=action.slice(8);if(action==='open'){open();return true;}
   const read=name=>document.getElementById('account-'+name)?.value||'';
   const username=read('username'),password=read('password'),next=read('next'),current=read('current');

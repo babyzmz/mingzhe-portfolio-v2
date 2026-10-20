@@ -35,6 +35,22 @@ export function prepareAction(raw,state){
    if(['subtasks','reminders','dailyReminderTimes','repeatWeekdays'].includes(key)&&!Array.isArray(v))throw Error('列表字段无效：'+key);
    if(!['duration','dailyTarget','repeatInterval','pointEvent','subtasks','reminders','dailyReminderTimes','repeatWeekdays'].includes(key)&&typeof v!=='string')throw Error('文本字段无效：'+key);
   }
+  for(const key of ['planDate','dueDate','endDate'])if(fields[key]){
+   const value=fields[key],stamp=Date.parse(value+'T00:00:00Z');
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(value)||!Number.isFinite(stamp)||new Date(stamp).toISOString().slice(0,10)!==value)throw Error('日期字段格式无效：'+key+'，请使用YYYY-MM-DD');
+  }
+  for(const key of ['startTime','endTime'])if(fields[key]&&!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(fields[key]))throw Error('时间字段格式无效：'+key+'，请使用HH:mm');
+  const effective=op.action==='create'?fields:{...state.items.find(i=>i.id===op.id),...fields};
+  if(effective.type==='event'&&effective.pointEvent===true){
+   // Only reject explicit model contradictions. The app's implicit defaults
+   // (including a normal point event's old duration) are not user intent.
+   const explicitDuration=Object.hasOwn(fields,'duration')&&fields.duration>1;
+   const explicitEnd=!!fields.endDate||!!fields.endTime;
+   // An explicitly supplied endTime without endDate means the same plan day,
+   // matching the editor's end-date fallback. Empty clearing is not an interval.
+   const span=Date.parse((effective.endDate||effective.planDate)+'T'+effective.endTime+'Z')-Date.parse(effective.planDate+'T'+effective.startTime+'Z');
+   if(explicitDuration||explicitEnd&&Number.isFinite(span)&&span>60000)throw Error('单个时间点与明确的时间段冲突，请重新生成；尚未执行');
+  }
   if(fields.category!==undefined&&!state.categories.some(c=>c.id===fields.category))throw Error('分类不存在');
  }
  if(op.action.startsWith('category_')&&op.action!=='category_create'&&!state.categories.some(c=>c.id===op.id))throw Error('分类不存在');

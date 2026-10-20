@@ -1,4 +1,4 @@
-import{createLiveOrb}from'./live-orb.mjs?v=0.5.11-orb-idle';
+import{createLiveOrb}from'./live-orb.mjs?v=0.5.12-cloud-quota';
 
 // A decorative companion only. It never owns focus, input, or assistant business state.
 export function orbMarkup(){return '<span class="assistant-orb" data-assistant-orb data-preserve-visual="xiaoshi" aria-hidden="true"><span class="orb-fallback"><i></i><i></i></span><canvas></canvas></span>';}

@@ -197,6 +197,7 @@ input[type=checkbox]{min-height:0;accent-color:var(--accent)}
 .month-cell:hover,[data-theme=dark] .month-cell:hover{background:var(--surface-hover)}.month-cell.outside,[data-theme=dark] .month-cell.outside{background:var(--surface-inset)}
 .cal-chip.event,.time-event,[data-theme=dark] .time-event{background:var(--status-pending-bg);color:var(--status-pending)}.cal-chip.task,.time-event.task,[data-theme=dark] .time-event.task{background:var(--status-complete-bg);color:var(--status-complete)}
 .agenda-selector{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:12px}.agenda-selector .cal-toolbar{padding:0 0 12px;border:0}.agenda-selector h2{font-size:16px;min-width:0}.agenda-weekdays,.agenda-dates{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}.agenda-weekdays span{text-align:center;font-size:12px;color:var(--muted);padding:8px 0}.agenda-date{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:48px;padding:4px 0;border-radius:8px;border:1px solid transparent}.agenda-date small{font-size:10px;min-height:14px;color:var(--muted)}.agenda-date.selected{background:var(--selected-bg);border-color:var(--accent);color:var(--accent)}.agenda-date.is-today>span{font-weight:700;text-decoration:underline;text-underline-offset:3px}.agenda-date.outside{color:var(--muted)}.agenda-items{margin-top:24px}.agenda-empty{padding:16px;color:var(--muted)}
+.calendar-shell .cal-toolbar .segment button{min-width:44px;min-height:44px}.agenda-selector .cal-toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}.agenda-selector .calendar-navigation{display:grid;grid-template-columns:44px minmax(0,1fr) 44px auto;gap:2px;width:100%}.agenda-selector .calendar-navigation h2{text-align:center;overflow-wrap:anywhere;line-height:1.5}.agenda-selector .calendar-navigation button{min-width:44px;min-height:44px}.agenda-selector .cal-toolbar .segment{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;margin:0}.agenda-selector .segment button{min-height:44px;min-width:0;padding:6px}.agenda-selector .year-grid{padding:0;gap:4px}.agenda-selector .mini-month{min-width:0;padding:10px 4px}.agenda-selector .mini-days{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px 0;font-size:11px}.agenda-selector .mini-month h3{gap:2px;font-size:12px}.agenda-selector .mini-month h3 .tiny{font-size:10px}.agenda-selector .week-scroll{max-height:min(680px,65dvh);border-top:1px solid var(--line)}.agenda-selector .time-calendar.day-only{min-width:0;width:100%}.agenda-selector .time-header button{min-width:44px;min-height:44px}.agenda-selector .time-hint{padding:12px 4px 0}.agenda-selector .time-event strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.agenda-selector .time-event span{overflow-wrap:anywhere}
 .web-assistant{background:var(--surface);top:64px;height:calc(100dvh - 64px);padding:20px}.workspace.assistant-open{grid-template-columns:minmax(0,1fr) 360px}.chat-message{background:var(--surface-inset);border-color:var(--border)}.chat-message.user{background:var(--selected-bg)}.chat-input{background:var(--surface-inset)}
 .nav-collapsed #app{grid-template-columns:0 minmax(0,1fr)}.nav-collapsed .sidebar{display:none}
 @media(min-width:900px) and (max-width:1199px){#app{grid-template-columns:200px minmax(0,1fr)}.sidebar{width:200px;padding:20px 12px}#main{padding:28px 24px}#topbar{padding-inline:24px}.workspace.assistant-open{grid-template-columns:minmax(0,1fr)}.assistant-open>#main{display:none}.web-assistant{grid-column:1}.nav-collapsed #app{grid-template-columns:0 minmax(0,1fr)}}
@@ -327,7 +328,12 @@ input[type=checkbox]{min-height:0;accent-color:var(--accent)}
 
 /* Quiet idle motion is visual-only; action states and reduced motion take priority. */
 @keyframes xiaoshi-idle-breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-1.5px) scale(1.008)}}
-@media(prefers-reduced-motion:no-preference){.assistant-orb[data-chat-state="idle"][data-gl-ready="true"]{animation:xiaoshi-idle-breathe 6s ease-in-out infinite}}
+@media(prefers-reduced-motion:no-preference){
+ .assistant-orb[data-chat-state="idle"]{animation:xiaoshi-idle-breathe 6s ease-in-out infinite}
+ /* GPU denial/context loss keeps the same quiet identity, without requiring pointer input. */
+ .assistant-orb[data-chat-state="idle"]:not([data-gl-ready="true"]) .orb-fallback{animation:xiaoshi-mini-glance 11s ease-in-out infinite}
+ .assistant-orb[data-chat-state="idle"]:not([data-gl-ready="true"]) .orb-fallback i{animation:xiaoshi-mini-blink 6.8s ease-in-out infinite}
+}
 /* One mobile bottom stack: safe area is included once in --mobile-nav-height. */
 :root{--mobile-safe-bottom:env(safe-area-inset-bottom,0px);--mobile-nav-height:calc(64px + var(--mobile-safe-bottom));--mobile-edge-gap:12px;--mobile-fab-size:52px;--mobile-clearance:calc(var(--mobile-nav-height) + var(--mobile-edge-gap));--mobile-toast-bottom:var(--mobile-clearance)}
 .mobile-fab{display:none}
@@ -336,7 +342,8 @@ input[type=checkbox]{min-height:0;accent-color:var(--accent)}
 @keyframes xiaoshi-mini-glance{0%,15%,100%{transform:translate(0,0)}32%,45%{transform:translate(1px,-.5px)}65%,78%{transform:translate(-1px,.5px)}}
 @keyframes xiaoshi-mini-blink{0%,47%,51%,100%{scale:1 1}49%{scale:1 .12}}
 @media(prefers-reduced-motion:no-preference){.header-orb[data-chat-state=idle]{animation:xiaoshi-idle-breathe 6s ease-in-out infinite}.header-orb[data-chat-state=idle] .mini-eyes{animation:xiaoshi-mini-glance 11s ease-in-out infinite}.header-orb[data-chat-state=idle] i{animation:xiaoshi-mini-blink 6.8s ease-in-out infinite}}
-html:has(body.modal-open) .header-orb,.header-orb[data-chat-state=thinking] .mini-eyes{animation:none}
+html:has(body.modal-open) .header-orb,html:has(body.modal-open) .header-orb *{animation-play-state:paused!important}
+.header-orb[data-chat-state=thinking] .mini-eyes{animation:none}
 @media(max-width:899px){
  .workspace{padding-bottom:var(--mobile-clearance)}
  body[data-mobile-fab=true]{--mobile-clearance:calc(var(--mobile-nav-height) + var(--mobile-fab-size) + 2 * var(--mobile-edge-gap));--mobile-toast-bottom:var(--mobile-clearance)}
@@ -360,6 +367,34 @@ html:has(body.modal-open) .header-orb,.header-orb[data-chat-state=thinking] .min
  #main:has(.assistant-page){height:calc(var(--visual-height,100dvh) - 56px - var(--mobile-nav-height));padding-bottom:12px}
 }
 @media(prefers-reduced-motion:reduce){.mobile-fab,.header-orb,.header-orb *{animation:none!important;transition:none!important;transform:none!important}}
-.assistant-visuals-paused .header-orb,.assistant-visuals-paused .header-orb *{animation-play-state:paused!important}
+.assistant-visuals-paused .assistant-orb,.assistant-visuals-paused .assistant-orb *{animation-play-state:paused!important}
 /* The full assistant owns the mascot while its page is open. */
 .workspace:has(#main[data-view=ai]) .header-assistant{visibility:hidden;pointer-events:none}.workspace:has(#main[data-view=ai]) .header-orb,.workspace:has(#main[data-view=ai]) .header-orb *{animation-play-state:paused!important}
+/* Apple native host supplies each inset independently; no screen/model-name assumptions. */
+.native-ios{--ios-safe-top:env(safe-area-inset-top,0px);--ios-safe-right:env(safe-area-inset-right,0px);--ios-safe-bottom:env(safe-area-inset-bottom,0px);--ios-safe-left:env(safe-area-inset-left,0px);--mobile-safe-bottom:var(--ios-safe-bottom);--ios-visual-inset:max(0px,calc(var(--ios-safe-top) - var(--visual-top,0px)));--ios-visible-height:calc(var(--visual-height,100dvh) - var(--ios-visual-inset))}
+.native-ios body{padding-top:var(--ios-safe-top);padding-left:var(--ios-safe-left);padding-right:var(--ios-safe-right)}
+.native-ios #app{min-height:calc(100dvh - var(--ios-safe-top))}
+.native-ios #topbar{top:var(--ios-safe-top)}
+.native-ios #sidebar{top:var(--ios-safe-top);left:var(--ios-safe-left);bottom:var(--ios-safe-bottom)}
+.native-ios .overlay{left:var(--ios-safe-left);right:var(--ios-safe-right);top:calc(var(--visual-top,0px) + var(--ios-visual-inset));bottom:auto;height:var(--ios-visible-height)}
+.native-ios .modal{max-height:calc(var(--ios-visible-height) - 44px)}
+.native-ios .drawer{height:calc(var(--ios-visible-height) - 24px);max-height:calc(var(--ios-visible-height) - 24px)}
+.native-ios .modal-footer{padding-bottom:max(12px,var(--mobile-safe-bottom))}
+.native-ios.keyboard-open{--mobile-safe-bottom:0px}
+/* Native touch chrome is not document text. Keep content copy and pinch zoom available. */
+.native-ios :is(button,[role=button],[role=switch],summary,label,nav,.topbar,.page-head,.section-title,.cal-toolbar,.agenda-toolbar,.settings-page-head){-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* These named states contain system guidance only, not task/note/chat text. */
+.native-ios :is(.upcoming-empty,.agenda-empty,.empty,.ai-placeholder){-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.native-ios :is(button,[role=button],[role=switch],summary,a,input,textarea,select){touch-action:manipulation}
+/* Later editor rules and inline candidate styles can override the narrow-screen 16px rule. */
+.native-ios :is(input,textarea,select,[contenteditable=true]){font-size:max(16px,1em)!important}
+.native-ios :is(input,textarea,[contenteditable=true],.note-content,.chat-message,.ai-source){-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+@media(min-width:900px){.native-ios #main{padding-bottom:max(48px,var(--ios-safe-bottom))}.native-ios #main:has(.assistant-page){height:calc(var(--visual-height,100dvh) - 73px - var(--ios-visual-inset) - var(--ios-safe-bottom))}}
+@media(max-width:899px){
+ .native-ios #mobile-nav{left:var(--ios-safe-left);right:var(--ios-safe-right)}
+ .native-ios #mobile-create{right:calc(20px + var(--ios-safe-right))}
+ .native-ios #main:has(.assistant-page){height:calc(var(--visual-height,100dvh) - 56px - var(--mobile-nav-height) - var(--ios-visual-inset))}
+ .native-ios.keyboard-open #main:has(.assistant-page){height:calc(var(--visual-height,100dvh) - 56px - var(--ios-visual-inset))}
+ .native-ios .overlay.drawer-overlay{top:calc(var(--visual-top,0px) + var(--ios-visual-inset));height:var(--ios-visible-height)}
+ .native-ios .overlay .modal.drawer{height:min(94dvh,var(--ios-visible-height));max-height:var(--ios-visible-height)}
+}
