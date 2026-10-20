@@ -1,16 +1,20 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.12-cloud-quota';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.13-calendar-actions';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.12-cloud-quota';
-import {installAccount} from './account-ui.mjs?v=0.5.12-cloud-quota';
-import {installMotion} from './motion.mjs?v=0.5.12-cloud-quota';
-import {askCloud,prepareAction,renderAssistantText,activityForQuestion,migrateAssistantProvider} from './assistant-cloud.mjs?v=0.5.12-cloud-quota';
-import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.12-cloud-quota';
-import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.12-cloud-quota';
-import {installControls} from './controls.mjs?v=0.5.12-cloud-quota';
-import {createChatHistory} from './chat-history.mjs?v=0.5.12-cloud-quota';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.13-calendar-actions';
+import {installAccount} from './account-ui.mjs?v=0.5.13-calendar-actions';
+import {installMotion} from './motion.mjs?v=0.5.13-calendar-actions';
+import {askCloud,prepareAction,renderAssistantText,activityForQuestion,migrateAssistantProvider} from './assistant-cloud.mjs?v=0.5.13-calendar-actions';
+import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.13-calendar-actions';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.13-calendar-actions';
+import {installControls} from './controls.mjs?v=0.5.13-calendar-actions';
+import {createChatHistory} from './chat-history.mjs?v=0.5.13-calendar-actions';
+import {installItemSwipe} from './item-swipe.mjs?v=0.5.13-calendar-actions';
+import {itemTiming} from './item-lifecycle.mjs?v=0.5.13-calendar-actions';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
+window.ShixuItemTiming=itemTiming;
+window.ShixuItemSwipe=installItemSwipe(app);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DOWNLOAD='https://fairyllm.com/shixu/download/';
@@ -40,6 +44,11 @@ function answer(text){
  return '我可以查询今天、本周、已完成事项，检查时间冲突，或帮你拆解待办和安排日程。直接描述需求即可生成候选，更改由你确认。当前使用本地规则，没有调用云模型。';
 }
 function actionHTML(m){const pending=(m.actions||[]).filter(p=>p.status==='pending');return (m.error&&m.retryQuestion&&!chatPending?`<div class="row"><button class="btn sm" data-web-action="retry-chat" data-message="${chatKey(m)}">重试</button><button class="btn ghost sm" data-web-action="local-chat" data-message="${chatKey(m)}">本次用本机查询</button></div>`:'')+(m.actions||[]).map((p,n)=>`<section class="assistant-action"><strong>${escape(p.op.label)}</strong>${actionDetails(p.op,app.getState())}<div class="row"><span class="tiny">${escape(p.receipt||({pending:'尚未执行',applying:'正在执行',applied:'已执行',rejected:'已放弃',error:'未执行',superseded:'已被新候选替换'}[p.status]||'已过期'))}</span>${p.status==='pending'?`<button class="btn primary sm" data-web-action="apply-assistant-action" data-message="${chatKey(m)}" data-index="${n}">确认执行</button><button class="btn ghost sm" data-web-action="reject-assistant-action" data-message="${chatKey(m)}" data-index="${n}">放弃</button>`:''}</div></section>`).join('')+(pending.length>1?`<div class="assistant-batch"><span class="tiny muted">逐项核对后，可确认本组；每项单独显示执行结果。</span><button class="btn primary sm" data-web-action="apply-assistant-batch" data-message="${chatKey(m)}">确认本组（${pending.length}项）</button></div>`:'');}
+function performConfirmedAction(op){
+ const event=op.action==='create'?op.item?.type==='event':app.getState().items.find(i=>i.id===op.id)?.type==='event';
+ const receipt=app.assistantPerform(op);
+ return window.Capacitor?.isNativePlatform?.()&&event&&['create','edit','delete','record','void_record'].includes(op.action)?receipt+'（拾序内改动；系统日历同步状态请到“我的 → 提醒”查看。）':receipt;
+}
 function chatHTML(full=false){
  const proposal=full?app.assistantProposal?.():'',modeName=app.nativeAssistant?.selected()?'Apple 本地模型':cloudMode&&pair?'DeepSeek V4.1 Flash':'本机查询';
  const header=full?`<div class="orb-stage">${orbMarkup()}<h1 data-assistant-name>小拾</h1></div>`:`<div class="spread assistant-brand"><div class="assistant-identity">${orbMarkup()}<h3>小拾</h3></div><button class="icon-btn" aria-label="关闭助手" data-web-action="close-assistant">×</button></div>`;
@@ -117,13 +126,13 @@ document.addEventListener('click',async e=>{
   // applying. A failure is reported per operation, never as blanket success.
   try{for(const p of pending){if(p.revision!==actionRevision(p.op,app.getState()))throw Error('本组有记录已改变，请重新生成操作');prepareAction(p.op,app.getState());}}
   catch(e){button.disabled=false;app.toast(e.message);assistantVisuals.setState('error');break;}
-  for(const p of pending){p.status='applying';try{if(p.revision!==actionRevision(p.op,app.getState()))throw Error('原记录已改变，此项未执行，请重新生成');p.receipt=app.assistantPerform(prepareAction(p.op,app.getState()).op);p.status='applied';}catch(e){p.status='error';p.receipt=e.message;}}
+  for(const p of pending){p.status='applying';try{if(p.revision!==actionRevision(p.op,app.getState()))throw Error('原记录已改变，此项未执行，请重新生成');p.receipt=performConfirmedAction(prepareAction(p.op,app.getState()).op);p.status='applied';}catch(e){p.status='error';p.receipt=e.message;}}
   assistantVisuals.setState(pending.some(p=>p.status==='error')?'error':'replying');saveMessages();renderChat(true);break;
  }
  case'apply-assistant-action':case'reject-assistant-action':{
   const m=messages.find(m=>String(chatKey(m))===button.dataset.message),p=m?.actions?.[Number(button.dataset.index)];if(!p||p.status!=='pending')break;
   if(action==='reject-assistant-action'){p.status='rejected';assistantVisuals.setState('idle');}
-  else{p.status='applying';try{if(p.revision!==actionRevision(p.op,app.getState()))throw Error('原记录已改变，请重新生成操作');const checked=prepareAction(p.op,app.getState());p.receipt=app.assistantPerform(checked.op);p.status='applied';assistantVisuals.setState('replying',m.actions.some(a=>a.status==='pending')?'confirming':'idle');}catch(e){p.status='error';p.receipt=e.message;assistantVisuals.setState('error');}}
+  else{p.status='applying';try{if(p.revision!==actionRevision(p.op,app.getState()))throw Error('原记录已改变，请重新生成操作');const checked=prepareAction(p.op,app.getState());p.receipt=performConfirmedAction(checked.op);p.status='applied';assistantVisuals.setState('replying',m.actions.some(a=>a.status==='pending')?'confirming':'idle');}catch(e){p.status='error';p.receipt=e.message;assistantVisuals.setState('error');}}
   saveMessages();renderChat(true);break;
  }
  case'clear-chat':chatEpoch++;chatAbort?.abort();chatPending=false;chatAbort=null;assistantVisuals.setState('idle');messages=[];app.clearAssistantProposal?.();saveMessages();renderChat();break;

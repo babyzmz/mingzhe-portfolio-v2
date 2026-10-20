@@ -398,3 +398,45 @@ html:has(body.modal-open) .header-orb,html:has(body.modal-open) .header-orb *{an
  .native-ios .overlay.drawer-overlay{top:calc(var(--visual-top,0px) + var(--ios-visual-inset));height:var(--ios-visible-height)}
  .native-ios .overlay .modal.drawer{height:min(94dvh,var(--ios-visible-height));max-height:var(--ios-visible-height)}
 }
+/* Touch list gestures preserve original controls and delegated business actions. */
+@media (any-pointer:coarse){
+ .task-row[data-swipe-item],.task-row[data-item]{touch-action:pan-y pinch-zoom}
+ .task-row.swipe-ready{isolation:isolate;overflow:hidden}
+ .task-row.swipe-ready>:not(.swipe-rail){transform:translateX(var(--swipe-offset,0px));z-index:1;position:relative}
+ .task-row.is-swiping>:not(.swipe-rail){will-change:transform;transition:none;user-select:none;-webkit-user-select:none}
+ .swipe-rail{position:absolute!important;top:0;bottom:0;z-index:2;display:flex;overflow:hidden;transform:none!important}
+ .swipe-left{right:0;width:clamp(0px,calc(-1 * var(--swipe-offset,0px)),144px);justify-content:flex-end}
+ .swipe-right{left:0;width:clamp(0px,var(--swipe-offset,0px),72px)}
+ .swipe-action{flex:0 0 72px;min-width:72px;min-height:44px;border:0;border-radius:0;background:var(--accent);color:var(--bg);font:inherit;font-weight:600;touch-action:manipulation}
+ .swipe-action.swipe-delete{background:var(--danger,#b84c55);color:#fff}
+ .swipe-action:focus-visible{outline:2px solid currentColor;outline-offset:-4px}
+ .swipe-action:disabled{pointer-events:none}
+}
+
+/* iOS keeps one fixed visible shell; only page/modal content scrolls. */
+html.native-ios{height:var(--ios-layout-height,100dvh);overflow:hidden}
+.native-ios body{position:fixed;inset:0;width:100%;height:var(--ios-layout-height,100dvh);min-height:0;padding:0;overflow:hidden;background:var(--header-bg)}
+.native-ios body::before{content:"";position:fixed;left:0;right:0;top:0;height:var(--ios-safe-top);background:var(--header-bg);z-index:45;pointer-events:none}
+.native-ios #app{position:fixed;top:calc(var(--visual-top,0px) + var(--ios-visual-inset));left:var(--ios-safe-left);right:var(--ios-safe-right);width:auto;height:var(--ios-visible-height);min-height:0;overflow:hidden;background:var(--app-bg)}
+.native-ios .workspace{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;padding-bottom:0;overflow:hidden}
+.native-ios #topbar{position:relative;top:0;flex:0 0 auto}
+.native-ios #main{flex:1 1 0;min-height:0;max-height:none;height:auto;width:100%;box-sizing:border-box;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-padding-bottom:24px}
+.native-ios #main:has(.assistant-page){height:auto!important;min-height:0;overflow:hidden}
+.native-ios #sidebar{top:calc(var(--visual-top,0px) + var(--ios-visual-inset));bottom:auto;height:var(--ios-visible-height);max-height:var(--ios-visible-height)}
+.native-ios .modal{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.native-ios .modal-header,.native-ios .modal-footer{flex:0 0 auto}
+.native-ios .modal-content{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.native-ios .control-sheet{max-height:calc(var(--ios-visible-height) - 24px)}
+@media(min-width:900px){
+ .native-ios .workspace.assistant-open{display:grid;grid-template-rows:auto minmax(0,1fr)}
+ .native-ios .web-assistant{height:auto;top:0;min-height:0;overflow:hidden}
+}
+@media(max-width:899px){
+ .native-ios #main{padding-bottom:var(--mobile-clearance)}
+ .native-ios #main:has(.assistant-page){padding-bottom:calc(var(--mobile-nav-height) + 12px)}
+ .native-ios.keyboard-open #main{padding-bottom:16px}
+ .native-ios.keyboard-open #main:has(.assistant-page){padding-bottom:12px}
+ .native-ios .overlay .modal.drawer{height:100%;max-height:100%}
+}
+
+.filter-chips.lifecycle-filters{flex-wrap:wrap;overflow-x:visible;min-width:0}
