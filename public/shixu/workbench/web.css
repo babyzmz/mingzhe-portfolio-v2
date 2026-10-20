@@ -399,19 +399,23 @@ html:has(body.modal-open) .header-orb,html:has(body.modal-open) .header-orb *{an
  .native-ios .overlay .modal.drawer{height:min(94dvh,var(--ios-visible-height));max-height:var(--ios-visible-height)}
 }
 /* Touch list gestures preserve original controls and delegated business actions. */
-@media (any-pointer:coarse){
- .task-row[data-swipe-item],.task-row[data-item]{touch-action:pan-y pinch-zoom}
- .task-row.swipe-ready{isolation:isolate;overflow:hidden}
- .task-row.swipe-ready>:not(.swipe-rail){transform:translateX(var(--swipe-offset,0px));z-index:1;position:relative}
- .task-row.is-swiping>:not(.swipe-rail){will-change:transform;transition:none;user-select:none;-webkit-user-select:none}
+/* JS limits activation to touch/pen, including fine-only styluses. */
+
+ .native-ios [data-swipe-item],[data-swipe-item],.task-row[data-item]{touch-action:pan-y pinch-zoom}
+ .swipe-ready{position:relative;isolation:isolate;overflow:hidden}
+ .swipe-ready>:not(.swipe-rail){transform:translateX(var(--swipe-offset,0px));z-index:1;position:relative}
+ .is-swiping>:not(.swipe-rail){will-change:transform;transition:none;user-select:none;-webkit-user-select:none}
  .swipe-rail{position:absolute!important;top:0;bottom:0;z-index:2;display:flex;overflow:hidden;transform:none!important}
- .swipe-left{right:0;width:clamp(0px,calc(-1 * var(--swipe-offset,0px)),144px);justify-content:flex-end}
- .swipe-right{left:0;width:clamp(0px,var(--swipe-offset,0px),72px)}
+ .swipe-left{right:0;width:max(0px,calc(-1 * var(--swipe-offset,0px)));justify-content:flex-end;background:var(--accent)}
+ .swipe-right{left:0;width:max(0px,var(--swipe-offset,0px));background:var(--danger,#b84c55)}
  .swipe-action{flex:0 0 72px;min-width:72px;min-height:44px;border:0;border-radius:0;background:var(--accent);color:var(--bg);font:inherit;font-weight:600;touch-action:manipulation}
+ .swipe-right .swipe-action{flex-basis:var(--swipe-button-width,72px);min-width:0}
  .swipe-action.swipe-delete{background:var(--danger,#b84c55);color:#fff}
  .swipe-action:focus-visible{outline:2px solid currentColor;outline-offset:-4px}
  .swipe-action:disabled{pointer-events:none}
-}
+ .swipe-full-cue{display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:#fff;font-weight:600;pointer-events:none}
+ .swipe-armed .swipe-action{visibility:hidden}
+ .swipe-armed .swipe-full-cue{display:flex}
 
 /* iOS keeps one fixed visible shell; only page/modal content scrolls. */
 html.native-ios{height:var(--ios-layout-height,100dvh);overflow:hidden}
@@ -426,7 +430,7 @@ html.native-ios{height:var(--ios-layout-height,100dvh);overflow:hidden}
 .native-ios .modal{display:flex;flex-direction:column;overflow:hidden;min-height:0}
 .native-ios .modal-header,.native-ios .modal-footer{flex:0 0 auto}
 .native-ios .modal-content{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-.native-ios .control-sheet{max-height:calc(var(--ios-visible-height) - 24px)}
+.native-ios .control-sheet{left:var(--ios-safe-left);right:var(--ios-safe-right);width:auto;max-height:calc(var(--ios-visible-height) - 24px)}
 @media(min-width:900px){
  .native-ios .workspace.assistant-open{display:grid;grid-template-rows:auto minmax(0,1fr)}
  .native-ios .web-assistant{height:auto;top:0;min-height:0;overflow:hidden}

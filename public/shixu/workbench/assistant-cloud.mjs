@@ -1,4 +1,4 @@
-import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.13-calendar-actions';
+import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.14-calendar-swipe';
 export {prepareAction,renderAssistantText,activityForQuestion};
 // Temporarily suspend the native-model preference without replaying draft/chat
 // or changing account credentials/consent. A later user send follows normal
