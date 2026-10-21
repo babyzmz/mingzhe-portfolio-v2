@@ -1,0 +1,111 @@
+name: Publish approved resume layout
+on:
+  push:
+    branches: [docs/resume-layout-20261021]
+    paths: [.github/workflows/resume-layout-publish.yml]
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: approved-resume-layout-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: babyzmz/mingzhe-portfolio-v2
+      APPROVED_SHA: 3eb7ba8d3ac13387d0511dba414aca1e98bb6b9a
+      PDF_SHA256: 9f9d06c84bb94a2b1b94cb230c20316856efed4cb43ef6f5c14c6ead33843430
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3eb7ba8d3ac13387d0511dba414aca1e98bb6b9a
+          fetch-depth: 2
+      - name: Guard reviewed source and resume-only scope
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')" = "$APPROVED_SHA"
+          test "$(gh api "repos/$GH_REPO/actions/runs/39549920375" --jq '.conclusion')" = 'success'
+          python - <<'PY'
+          import base64,hashlib,os,pathlib,re,subprocess
+          assert subprocess.check_output(['git','rev-parse','HEAD^']).decode().strip()=='7825a1391120c5b4169423f9a160fe8b9180ff4c'
+          changed=set(subprocess.check_output(['git','diff','--name-only','HEAD^','HEAD']).decode().splitlines())
+          assert changed=={'public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf','Mingzhe-Portfolio-Preview.html'},changed
+          data=pathlib.Path('public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf').read_bytes()
+          assert hashlib.sha256(data).hexdigest()==os.environ['PDF_SHA256']
+          before=subprocess.check_output(['git','show','HEAD^:Mingzhe-Portfolio-Preview.html'])
+          after=pathlib.Path('Mingzhe-Portfolio-Preview.html').read_bytes()
+          pattern=rb'data:application/pdf;base64,([A-Za-z0-9+/=]+)'
+          assert re.sub(pattern,b'PDF',before)==re.sub(pattern,b'PDF',after)
+          matches=re.findall(pattern,after);assert len(matches)==5
+          assert all(base64.b64decode(x)==data for x in matches)
+          pathlib.Path('publication-evidence').mkdir(exist_ok=True)
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Build expected production resources
+        run: npm ci && npm run build && npm test
+      - name: Require current main CI
+        run: |
+          set -euo pipefail
+          id=''
+          for attempt in $(seq 1 30); do
+            id=$(gh run list --workflow ci.yml --commit "$APPROVED_SHA" --event push --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "$id"
+          echo "$id" > publication-evidence/main-ci-run.txt
+          gh run watch "$id" --exit-status --interval 10
+      - name: Deploy through the unchanged Pages workflow
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')" = "$APPROVED_SHA"
+          gh workflow run pages.yml --ref main -f environment_name=github-pages
+          id=''
+          for attempt in $(seq 1 30); do
+            id=$(gh run list --workflow pages.yml --commit "$APPROVED_SHA" --event workflow_dispatch --limit 5 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 5
+          done
+          test -n "$id"
+          echo "$id" > publication-evidence/pages-run.txt
+          gh run watch "$id" --exit-status --interval 10
+      - name: Verify normal and cache-busted custom-domain downloads
+        shell: python
+        run: |
+          import hashlib,json,os,pathlib,time,urllib.request
+          root=pathlib.Path('dist');base='https://fairyllm.com/';sha=os.environ['APPROVED_SHA'];expected=os.environ['PDF_SHA256']
+          assets={p.relative_to(root).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in (root/'assets').iterdir() if p.suffix in ['.css','.js']}
+          pdf='documents/Mingzhe_Zhang_AI_Developer_Resume.pdf'
+          def get(path):
+              req=urllib.request.Request(base+path,headers={'Cache-Control':'no-cache','User-Agent':'Portfolio-resume-release-verifier'})
+              with urllib.request.urlopen(req,timeout=30) as response:
+                  assert response.status==200
+                  return response.read()
+          last=''
+          for attempt in range(24):
+              try:
+                  html=get('?verified='+sha).decode()
+                  for path in [pdf,pdf+'?v='+sha]:
+                      data=get(path)
+                      assert data.startswith(b'%PDF-')
+                      assert hashlib.sha256(data).hexdigest()==expected,'stale PDF at '+path
+                  for name,digest in assets.items():
+                      assert hashlib.sha256(get(name+'?verified='+sha)).hexdigest()==digest,name
+                  assert any(name.split('/')[-1] in html for name in assets if name.endswith('.js'))
+                  result={'verified':True,'revision':sha,'resume_url':base+pdf,'pdf_sha256':expected,'pdf_bytes':len(data),'normal_url_verified':True,'cache_busted_url_verified':True,'asset_sha256':assets,'website_content_changed':False,'checked_at_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())}
+                  pathlib.Path('publication-evidence/live-result.json').write_text(json.dumps(result,indent=2));print(json.dumps(result,indent=2));break
+              except Exception as exc:
+                  last=str(exc);print('Waiting for verified content:',last,flush=True);time.sleep(10)
+          else:raise RuntimeError(last)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resume-layout-publication-evidence
+          path: publication-evidence/
+          retention-days: 7
