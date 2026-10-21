@@ -1,0 +1,137 @@
+name: Verify resume layout and project roles
+on:
+  push:
+    branches: [docs/resume-layout-20261021]
+    paths: [.github/workflows/resume-layout-stage.yml]
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Recover the previously reviewed resume generator
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: python
+        run: |
+          import base64,hashlib,json,lzma,os,pathlib,urllib.request
+          url='https://api.github.com/repos/babyzmz/mingzhe-portfolio-v2/git/blobs/d0c68657b58f48045f071d0cd1711a406f1bebdd'
+          request=urllib.request.Request(url,headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'User-Agent':'Resume-layout-verification'})
+          with urllib.request.urlopen(request,timeout=30) as response:obj=json.load(response)
+          raw=base64.b64decode(base64.b64decode(obj['content']),validate=True)
+          assert hashlib.sha256(raw).hexdigest()=='f6beb41c4ac64c3d5b8ff8fb10fee4030c3645a7045543bb102c14ad41054ce8'
+          data=lzma.decompress(raw)
+          assert hashlib.sha256(data).hexdigest()=='7f941d3ecdafa38a3e875c606951c7a1f71861c8aa8619431c7546039bd20505'
+          path=pathlib.Path('test-artifacts/resume/source/build-resume.py');path.parent.mkdir(parents=True,exist_ok=True)
+          path.write_text(json.loads(data)['scripts/build-resume.py'])
+      - name: Install document tooling
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libreoffice-writer fonts-crosextra-carlito fonts-liberation2 poppler-utils
+          python -m pip install python-docx==1.2.0 pypdf==5.9.0
+          python test-artifacts/resume/source/build-resume.py --out test-artifacts/resume
+      - name: Apply only the requested layout, role and date changes
+        shell: python
+        run: |
+          from pathlib import Path
+          from collections import Counter
+          from docx import Document
+          from docx.enum.style import WD_STYLE_TYPE
+          from docx.enum.text import WD_TAB_ALIGNMENT
+          from docx.shared import Pt,RGBColor
+          path=next(Path('test-artifacts/resume').glob('*.docx'));doc=Document(path)
+          before=[p.text for p in doc.paragraphs]
+          def exact(text):
+              matches=[p for p in doc.paragraphs if p.text==text]
+              assert len(matches)==1,(text,len(matches))
+              return matches[0]
+          def remove(p):p._p.getparent().remove(p._p)
+          portfolio=exact('Portfolio: fairyllm.com  |  GitHub: github.com/babyzmz')
+          exact('TECHNICAL SKILLS')._p.addprevious(portfolio._p)
+          portfolio.paragraph_format.space_before=Pt(2);portfolio.paragraph_format.space_after=Pt(3)
+          heading=exact('SELECTED PROJECT EXPERIENCE');remove(exact('EXPERIENCE'));heading.text='EXPERIENCE'
+          remove(exact('Independent, AI-assisted product development | Current projects'))
+          intern=exact('Beijing Anxin | Intern\tJan 2023 – Mar 2023')
+          description=exact('Supported big-data platform construction and maintenance; contributed to frontend/backend tasks under supervision, with exposure to production-safety AI and system monitoring.')
+          heading._p.addnext(intern._p);intern._p.addnext(description._p)
+          intern.style=doc.styles['CV Project'];intern.paragraph_format.space_before=Pt(1);description.paragraph_format.space_after=Pt(5)
+          exact('SELECTED PROJECT EXPERIENCE — CONTINUED').text='EXPERIENCE — CONTINUED'
+          style=doc.styles.add_style('CV Project Role',WD_STYLE_TYPE.PARAGRAPH);style.base_style=doc.styles['CV Context']
+          style.font.name='Carlito';style.font.size=Pt(9.5);style.font.color.rgb=RGBColor.from_string('526877')
+          style.paragraph_format.space_before=Pt(0);style.paragraph_format.space_after=Pt(3)
+          style.paragraph_format.keep_with_next=True;style.paragraph_format.widow_control=True
+          section=doc.sections[0];width=section.page_width-section.left_margin-section.right_margin
+          style.paragraph_format.tab_stops.add_tab_stop(width,WD_TAB_ALIGNMENT.RIGHT)
+          for title,date in [('Shixu | Personal Planning & Productivity','13 Oct 2026 – Present'),('Fairy | Personal Device AI Assistant','Mar 2026 – Present'),('Mojo Project Family | Personal & Enterprise AI Workbenches','Jan 2026 – Present')]:
+              heading=exact(title);role=doc.add_paragraph(style='CV Project Role')
+              r=role.add_run('AI Application Developer');r.bold=True;r.font.color.rgb=RGBColor.from_string('087C82')
+              role.add_run('  |  Independent Project');role.add_run('\t'+date);heading._p.addnext(role._p)
+          missing=Counter(before)-Counter(p.text for p in doc.paragraphs)
+          assert set(missing)<= {'SELECTED PROJECT EXPERIENCE','SELECTED PROJECT EXPERIENCE — CONTINUED','Independent, AI-assisted product development | Current projects'},missing
+          dest=path.with_name('Mingzhe_Zhang_AI_Application_Developer_Resume_2026-10_Revised.docx');doc.save(dest);path.unlink()
+      - name: Export and render the revised two-page PDF
+        run: |
+          libreoffice -env:UserInstallation=file://$RUNNER_TEMP/resume-layout-lo --headless --convert-to pdf --outdir test-artifacts/resume test-artifacts/resume/*.docx
+          cp test-artifacts/resume/*.pdf public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf
+          pdftoppm -scale-to 1800 -png public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf test-artifacts/resume/page
+      - name: Validate PDF and narrowly replace embedded resume bytes
+        shell: python
+        run: |
+          import base64,hashlib,json,pathlib,re,subprocess
+          from pypdf import PdfReader
+          path=pathlib.Path('public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf');data=path.read_bytes();reader=PdfReader(path)
+          assert len(reader.pages)==2
+          text='\n'.join(page.extract_text() for page in reader.pages)
+          clean=' '.join(text.split())
+          assert 'SELECTED PROJECT EXPERIENCE' not in clean
+          assert clean.index('PROFILE')<clean.index('Portfolio:')<clean.index('TECHNICAL SKILLS')<clean.index('EXPERIENCE')<clean.index('Beijing Anxin')<clean.index('Shixu |')
+          for phrase in ['13 Oct 2026 – Present','Mar 2026 – Present','Jan 2026 – Present','automatic updates and release distribution']:
+              assert phrase in clean,phrase
+          assert clean.count('Independent Project')==3
+          urls=[str(a.get_object().get('/A',{}).get('/URI','')) for page in reader.pages for a in page.get('/Annots',[])]
+          assert 'https://fairyllm.com/' in urls and 'https://github.com/babyzmz' in urls
+          html=pathlib.Path('Mingzhe-Portfolio-Preview.html');before=html.read_bytes();pattern=rb'data:application/pdf;base64,[A-Za-z0-9+/=]+'
+          after,count=re.subn(pattern,b'data:application/pdf;base64,'+base64.b64encode(data),before)
+          assert count>=4
+          assert re.sub(pattern,b'PDF',before)==re.sub(pattern,b'PDF',after)
+          html.write_bytes(after)
+          result={'pages':2,'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'links':urls,'embedded_replacements':count,'project_roles':3,'website_content_changed':False}
+          pathlib.Path('test-artifacts/resume/checks.json').write_text(json.dumps(result,indent=2))
+          print(json.dumps(result,indent=2))
+      - name: Build and test without unrelated website changes
+        run: |
+          npm ci
+          npm run build
+          npm test
+          cp Mingzhe-Portfolio-Preview.html "$RUNNER_TEMP/resume-layout-standalone.html"
+          npm run build:offline
+          cp "$RUNNER_TEMP/resume-layout-standalone.html" Mingzhe-Portfolio-Preview.html
+          node --test tests/bundle.test.mjs
+          npm run privacy-check
+      - name: Save only the verified resume candidate
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only']).decode().splitlines())
+          assert changed=={'public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf','Mingzhe-Portfolio-Preview.html'},changed
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf Mingzhe-Portfolio-Preview.html
+          git commit -m 'docs: reorganise experience and add project roles and owner-provided timelines'
+          git push origin HEAD:refs/heads/docs/resume-layout-20261021
+          git rev-parse HEAD > test-artifacts/resume/verified-revision.txt
+          git ls-tree HEAD public/documents/Mingzhe_Zhang_AI_Developer_Resume.pdf Mingzhe-Portfolio-Preview.html > test-artifacts/resume/blobs.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resume-layout-verified
+          path: test-artifacts/resume/
+          retention-days: 7
