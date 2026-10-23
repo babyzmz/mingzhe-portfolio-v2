@@ -1,15 +1,19 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.15-swipe-direction';
+import {createDraftArchive,draftOwner,editorSession,checkEditorContext} from './editor-drafts.mjs';
+import * as workbenchLayout from './workbench-layout.mjs';
+window.ShixuEditorDrafts={archive:createDraftArchive(localStorage),owner:()=>draftOwner(localStorage),session:editorSession,check:checkEditorContext};
+window.ShixuWorkbenchLayout=workbenchLayout;
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=duo18a-20261024';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.15-swipe-direction';
-import {installAccount} from './account-ui.mjs?v=0.5.15-swipe-direction';
-import {installMotion} from './motion.mjs?v=0.5.15-swipe-direction';
-import {askCloud,prepareAction,renderAssistantText,activityForQuestion,migrateAssistantProvider} from './assistant-cloud.mjs?v=0.5.15-swipe-direction';
-import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.15-swipe-direction';
-import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.15-swipe-direction';
-import {installControls} from './controls.mjs?v=0.5.15-swipe-direction';
-import {createChatHistory} from './chat-history.mjs?v=0.5.15-swipe-direction';
-import {installItemSwipe} from './item-swipe.mjs?v=0.5.15-swipe-direction';
-import {itemTiming} from './item-lifecycle.mjs?v=0.5.15-swipe-direction';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=duo18a-20261024';
+import {installAccount} from './account-ui.mjs?v=duo18a-20261024';
+import {installMotion} from './motion.mjs?v=duo18a-20261024';
+import {askCloud,prepareAction,renderAssistantText,activityForQuestion,migrateAssistantProvider} from './assistant-cloud.mjs?v=duo18a-20261024';
+import {actionRevision,actionDetails} from './assistant-actions.mjs?v=duo18a-20261024';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=duo18a-20261024';
+import {installControls} from './controls.mjs?v=duo18a-20261024';
+import {createChatHistory} from './chat-history.mjs?v=duo18a-20261024';
+import {installItemSwipe} from './item-swipe.mjs?v=duo18a-20261024';
+import {itemTiming} from './item-lifecycle.mjs?v=duo18a-20261024';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -60,7 +64,7 @@ async function send(text,forceLocal=false){
  const account=pair,useApple=!forceLocal&&!!app.nativeAssistant?.selected(),useCloud=!forceLocal&&!useApple&&cloudMode&&!!account,question=text.trim();
  if(question.length>4000){app.toast('单条提问请控制在4000字以内');return;}
  if(useCloud&&localStorage.getItem('shixu-ai-consent:'+account.id)!=='yes'){
-  consentPending=true;let allowed=false;try{allowed=await window.ShixuConfirm('使用云端小拾会把提问、最近对话及相关事项（标题、备注、日期和完成记录）发送到硅基流动 DeepSeek。聊天留在本机；修改始终先确认。每账户每天10条消息（UTC），内部读取轮次不重复占消息额度，受全局预算限制。是否开启？');}finally{consentPending=false;}if(!allowed||pair?.id!==account.id)return;
+  consentPending=true;let allowed=false;try{allowed=await window.ShixuConfirm('使用云端小拾会把提问、最近对话及相关事项（标题、备注、日期和完成记录）发送到硅基流动 DeepSeek。聊天留在本机；修改始终先确认。额度由账户权限和服务总预算决定，内部读取轮次不重复占消息额度。是否开启？');}finally{consentPending=false;}if(!allowed||pair?.id!==account.id)return;
   localStorage.setItem('shixu-ai-consent:'+account.id,'yes');
  }
  const past=[...messages],epoch=++chatEpoch;chatPending=true;chatAbort=new AbortController();
@@ -81,6 +85,7 @@ async function send(text,forceLocal=false){
  }catch(error){if(epoch!==chatEpoch)return;const stopped=error.name==='AbortError';messages.push({role:'assistant',error:!stopped,retryQuestion:stopped?'':question,html:stopped?'这次已停止，没有自动修改事项。':'这次没有完成：'+escape(error.message||'请稍后重试。')});assistantVisuals.setState(stopped?'idle':'error');}
  finally{if(epoch===chatEpoch){chatPending=false;chatAbort=null;messages=messages.slice(-50);saveMessages();renderChat(true);}}
 }
+app.assistantVisible=()=>assistantOpen;
 app.hideAssistant=()=>{window.ShixuMotion.assistant(false);assistantOpen=false;$('.workspace').classList.remove('assistant-open');};
 app.cancelAssistantRequest=()=>chatAbort?.abort();
 function showAssistant(){if(matchMedia('(max-width:899px)').matches){app.nav('ai');return;}if($('#main .web-assistant-main')){app.hideAssistant();renderChat();return;}assistantOpen=!assistantOpen;$('.workspace').classList.toggle('assistant-open',assistantOpen);renderChat();window.ShixuMotion.assistant(assistantOpen);}
@@ -90,7 +95,7 @@ let scopeChatSet=false;
 const accounts=installAccount(app,{chat(value){if(value!==undefined){chatEpoch++;chatAbort?.abort();chatPending=false;chatAbort=null;assistantVisuals.setState('idle');messages=restoreChat(value);scopeChatSet=true;chatHistory.dropSession();renderChat();}return chatHistory.bounded(messages);},reset(){paused=localStorage.getItem('shixu-sync-paused')==='true';expired=false;},changed(value){const next=chatOwner();if(next!==chatScope){chatScope=next;messages=restoreChat(chatHistory.load(chatScope,{legacySession:false,fallback:scopeChatSet?messages:[]}));saveMessages();}scopeChatSet=false;pair=value;expired=false;status=value?'已登录 · '+value.username:'未登录 · 本机保存';app.render();},busy:()=>busy,status:()=>status,paused:()=>paused,expired:()=>expired,message(text){status=text;repaintStatus();},sync});
 pair=accounts.session;if(pair)status='已登录 · '+pair.username;
 app.myProfile=()=>({username:pair?.username||'',signedIn:!!pair&&!expired,expired:!!pair&&expired,status:expired?'登录已过期，请重新登录':status});
-app.syncSettings=(section)=>section==='account'?`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div>`:`<div class="settings-row"><div><h3>小拾模型</h3><p>DeepSeek V4.1 Flash · 登录后可用</p><p class="tiny">云端密钥由服务端保管，首次发送前授权；改动先确认。每账户每天10条消息（UTC），内部读取轮次不重复占消息额度，受全局预算限制。可随时切回本机查询。</p></div><div class="sync-actions"><button class="btn sm" data-web-action="assistant-mode">${app.nativeAssistant?.selected()?'停用 Apple，恢复原模型':cloudMode&&pair?'切换本机查询':'启用云端小拾'}</button>${pair?'<button class="btn ghost sm" data-web-action="assistant-revoke">撤销数据发送授权</button>':''}</div></div>`;
+app.syncSettings=(section)=>section==='account'?`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div>`:`<div class="settings-row"><div><h3>小拾模型</h3><p>DeepSeek V4.1 Flash · 登录后可用</p><p class="tiny">云端密钥由服务端保管，首次发送前授权；改动先确认。额度由账户权限和服务总预算决定，内部读取轮次不重复占消息额度。可随时切回本机查询。</p></div><div class="sync-actions"><button class="btn sm" data-web-action="assistant-mode">${app.nativeAssistant?.selected()?'停用 Apple，恢复原模型':cloudMode&&pair?'切换本机查询':'启用云端小拾'}</button>${pair?'<button class="btn ghost sm" data-web-action="assistant-revoke">撤销数据发送授权</button>':''}</div></div>`;
 window.openHelp=()=>window.location.href='https://fairyllm.com/shixu/help/';
 function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state').forEach(e=>e.textContent=status);document.querySelectorAll('.my-sync-status').forEach(e=>e.textContent=pair?status:'当前数据保存在本机');const badge=$('.my-profile-status');if(badge)badge.textContent=expired?'需重新登录':pair?'已登录':'未登录';const control=$('.my-account-action');if(control)control.textContent=expired?'重新登录':pair?'管理账户':'登录 / 注册';}
 window.addEventListener('shixu-render',()=>{

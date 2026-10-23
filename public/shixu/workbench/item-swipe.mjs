@@ -1,9 +1,11 @@
+import {localDay} from './workbench-layout.mjs';
 // Gesture feedback only. All operations remain the existing delegated actions.
 export function installItemSwipe(app){
  const abort=new AbortController(),signal=abort.signal,reduce=matchMedia('(prefers-reduced-motion:reduce)');
+ let pressTimer=0,preview=null;
  const points=new Set();let drag=null,opened=null,motion=null,frame=0,suppressUntil=0,suppressId='';
  const listen=(target,name,fn,options={})=>target.addEventListener(name,fn,{...options,signal});
- const modal=()=>!!document.querySelector('#modal-root .modal,dialog[open],.control-sheet[open]');
+ const modal=()=>!!document.querySelector('#modal-root .modal,dialog[open],.control-sheet[open],.item-preview-layer');
  const rowSelector='[data-swipe-item],.task-row[data-item]';
  const itemOf=row=>app.getState().items.find(i=>i.id===(row.dataset.swipeItem||row.dataset.item));
  const primaryAction=item=>item?.type==='task'&&!item.dailyTarget?{action:item.status==='done'?'restore':'complete',label:item.status==='done'?'恢复':'完成'}:item&&item.type!=='note'?{action:'record',label:'记录一次'}:null;
@@ -27,7 +29,7 @@ export function installItemSwipe(app){
    if(Math.abs(s.target-s.x)<.4&&Math.abs(s.v)<8||time-s.start>500||reduce.matches){const row=s.row,target=s.target;draw(row,target);stop();if(!target)reset(row);}else frame=requestAnimationFrame(tick);
   };frame=requestAnimationFrame(tick);
  }
- function release(){if(drag?.captured){try{drag.row.releasePointerCapture(drag.id);}catch{}}drag=null;}
+ function release(){clearTimeout(pressTimer);pressTimer=0;if(drag?.captured){try{drag.row.releasePointerCapture(drag.id);}catch{}}drag=null;}
  function close(){const rows=new Set([opened,drag?.row,motion?.row]);stop();release();for(const row of rows)reset(row);}
  function prepare(row,item){
   if(row.classList.contains('swipe-ready'))return;
@@ -35,6 +37,21 @@ export function installItemSwipe(app){
   const add=(side,commands,label)=>{const rail=document.createElement('div');rail.className='swipe-rail swipe-'+side;rail.dataset.side=side;rail.setAttribute('role','group');rail.setAttribute('aria-label','事项快捷操作');rail.setAttribute('aria-hidden','true');for(const[action,text]of commands){const button=document.createElement('button');button.type='button';button.className='swipe-action '+(action==='delete-item'?'swipe-delete':'');button.dataset.action=action;button.dataset.id=item.id;button.textContent=text;button.setAttribute('aria-label',text+'：'+item.title);button.disabled=true;rail.append(button);}const cue=document.createElement('span');cue.className='swipe-full-cue';cue.textContent='松开'+label;cue.setAttribute('aria-hidden','true');rail.append(cue);row.append(rail);};
   add('left',[['edit','编辑'],['delete-item','删除']],'删除');
   const primary=primaryAction(item);if(primary)add('right',[[primary.action==='record'?'record-completion':'complete',primary.label]],primary.label);
+ }
+ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function closePreview(){if(!preview)return false;const old=preview;preview=null;old.host.remove();for(const[node,inert]of old.locks)node.inert=inert;if(old.origin?.isConnected)old.origin.focus?.({preventScroll:true});return true;}
+ function showPreview(row,item,origin=document.activeElement){
+  closePreview();const host=document.createElement('div');host.className='item-preview-layer';
+  const category=app.getState().categories.find(c=>c.id===item.category)?.name||'未分类',entries=(item.completions||[]).filter(e=>!e.voided),count=entries.filter(e=>{const d=new Date(e.at);return Number.isFinite(d.getTime())&&localDay(d)===localDay()}).length,primary=primaryAction(item);
+  const metadata=[['分类',category],['计划',item.planDate],['截止',item.dueDate],['时间',item.startTime+(item.endTime&&!item.pointEvent?' – '+item.endTime:'')],...(item.dailyTarget?[['今日记录',count+' / '+item.dailyTarget]]:entries.length?[['完成记录',entries.length+' 次']]:[])].filter(([,v])=>v);
+  host.innerHTML=`<div class="item-preview-stack" role="dialog" aria-modal="true" aria-labelledby="item-preview-title" tabindex="-1"><article class="item-preview-card"><header><h2 id="item-preview-title">${esc(item.title||item.body.split('\n')[0]||'事项')}</h2><button type="button" class="icon-btn" data-preview-command="close" aria-label="关闭预览">×</button></header>${item.body?'<p class="item-preview-body">'+esc(item.body)+'</p>':''}<dl>${metadata.map(([k,v])=>'<div><dt>'+k+'</dt><dd>'+esc(v)+'</dd></div>').join('')}</dl>${item.subtasks?.length?'<ul class="item-preview-subtasks">'+item.subtasks.map(t=>'<li>'+esc((t.done?'✓ ':'○ ')+(t.text??t.title??''))+'</li>').join('')+'</ul>':''}</article><nav class="item-preview-actions" aria-label="事项操作"><button type="button" data-preview-command="detail">打开详情</button><button type="button" data-preview-command="edit">编辑</button>${primary?'<button type="button" data-preview-command="primary">'+primary.label+'</button>':''}<button type="button" data-preview-command="delete" class="danger">删除</button></nav></div>`;
+  const locks=['#app','#mobile-nav','#mobile-create'].map(selector=>document.querySelector(selector)).filter(Boolean).map(node=>[node,node.inert]);for(const[node]of locks)node.inert=true;
+  preview={host,origin,locks,id:item.id};document.body.append(host);host.querySelector('.item-preview-stack').focus({preventScroll:true});
+  host.addEventListener('click',event=>{const command=event.target.closest('[data-preview-command]')?.dataset.previewCommand;if(!command){if(event.target===host)closePreview();return;}event.preventDefault();event.stopPropagation();closePreview();if(command==='close')return;try{if(command==='detail')app.openDetails(item.id);else if(command==='edit')app.openEditor(item.id);else if(command==='delete')app.requestDelete(item.id);else if(command==='primary')app.assistantPerform({action:primary.action,id:item.id});}catch(error){app.toast(error.message)}});
+ }
+ function armPreview(d,event){
+  if(event.target.closest('.task-check,.row-actions,.daily-add,.daily-history,input,textarea,select'))return;
+  pressTimer=setTimeout(()=>{pressTimer=0;if(drag!==d||d.captured||modal()||!d.row.isConnected)return;const current=itemOf(d.row);if(JSON.stringify(current)!==d.snapshot)return;suppressUntil=performance.now()+900;suppressId=current.id;const origin=event.target.closest('button,[tabindex]')||document.activeElement;release();reset(d.row);showPreview(d.row,current,origin);},500);
  }
  listen(document,'pointerdown',event=>{
   suppressUntil=0;
@@ -52,10 +69,11 @@ export function installItemSwipe(app){
   const wasMoving=motion?.row===row;const base=Number(row.dataset.swipeOffset)||0;if(wasMoving)stop();
   prepare(row,item);
   drag={row,id:event.pointerId,startX:event.clientX,startY:event.clientY,base,lastX:event.clientX,lastTime:event.timeStamp,v:0,captured:false,primary:primaryAction(item),snapshot:JSON.stringify(item)};
+  armPreview(drag,event);
  },{capture:true,passive:true});
  listen(document,'pointermove',event=>{
   const d=drag;if(!d||d.id!==event.pointerId)return;
-  const dx=event.clientX-d.startX,dy=event.clientY-d.startY;
+  const dx=event.clientX-d.startX,dy=event.clientY-d.startY;if(Math.hypot(dx,dy)>8){clearTimeout(pressTimer);pressTimer=0;}
   if(!d.captured){
    if(Math.abs(dy)>8&&Math.abs(dy)>Math.abs(dx)){close();return;}
    if(Math.abs(dx)<12||Math.abs(dx)<Math.abs(dy)*1.4)return;
@@ -92,12 +110,17 @@ export function installItemSwipe(app){
   if(opened)close();
  },{capture:true});
  for(const name of ['scroll','wheel'])listen(document,name,close,{capture:true,passive:true});
- for(const name of ['shixu-render','shixu-change'])listen(window,name,close);
- listen(document,'keydown',event=>{if(event.key==='Escape'||event.key==='Tab')close();},{capture:true});
- const resetInteraction=()=>{points.clear();close();};
+ for(const name of ['shixu-render','shixu-change'])listen(window,name,()=>{close();closePreview();});
+ listen(document,'contextmenu',event=>{const row=event.target.closest(rowSelector);if(!row)return;if(preview){event.preventDefault();return;}if(modal()||event.target.closest('input,textarea,select,[contenteditable=true]'))return;const item=itemOf(row);if(!item)return;event.preventDefault();close();showPreview(row,item,event.target.closest('button,[tabindex]')||document.activeElement);},{capture:true});
+ listen(document,'keydown',event=>{
+  if(preview){const buttons=[...preview.host.querySelectorAll('button')],first=buttons[0],last=buttons.at(-1);if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closePreview();return;}if(event.key==='Tab'&&(event.shiftKey&&(document.activeElement===first||document.activeElement===preview.host.querySelector('[role=dialog]'))||!event.shiftKey&&document.activeElement===last)){event.preventDefault();(event.shiftKey?last:first)?.focus();}return;}
+  if(event.key==='ContextMenu'||event.shiftKey&&event.key==='F10'){const row=event.target.closest(rowSelector),item=row&&itemOf(row);if(item&&!modal()){event.preventDefault();close();showPreview(row,item,event.target);return;}}
+  if(event.key==='Escape'||event.key==='Tab')close();
+ },{capture:true});
+ const resetInteraction=()=>{points.clear();close();closePreview();};
  listen(window,'blur',resetInteraction);listen(document,'visibilitychange',resetInteraction);
  listen(document,'toggle',()=>{if(modal())close();},{capture:true});
  const observer=new MutationObserver(()=>{if(modal())close();});observer.observe(document.body,{childList:true});const host=document.querySelector('#modal-root');if(host)observer.observe(host,{childList:true});
  listen(reduce,'change',()=>{if(motion){const {row,target}=motion;stop();draw(row,target);if(!target)reset(row);}});
- return{close,destroy(){close();observer.disconnect();abort.abort();points.clear();}};
+ return{close,closePreview,destroy(){closePreview();close();observer.disconnect();abort.abort();points.clear();}};
 }

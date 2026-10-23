@@ -216,6 +216,8 @@ function fallbackFaceStyle(resolved) {
   return { backgroundColor: resolved.body };
 }
 const IDLE_MS = 3e3;
+// Preserve the original 60Hz response as a time constant on any RAF cadence.
+export function frameEase(responseAt60Hz,elapsedMs){return 1-Math.pow(1-responseAt60Hz,Math.max(0,elapsedMs)/(1000/60));}
 const REST_LOOK = { x: 0, y: 0.08 };
 function createLiveOrb(canvas, initial = {}) {
   let options = {
@@ -224,6 +226,10 @@ function createLiveOrb(canvas, initial = {}) {
     ...initial
   };
   let dark = resolveDark(options.theme);
+  let paint;
+  let paintDirty=true;
+  const updatePaint=()=>{const resolved=resolveVariant(options.variant,options.color,options.eyeColor,options.colors,dark);paint={mode:resolved.mode,body:hexToRgb(resolved.body),eye:hexToRgb(resolved.eye),palette:[0,1,2].map(i=>hexToRgb(resolved.palette[i%resolved.palette.length]??WEBGL_COLORS[i]))};paintDirty=true;};
+  updatePaint();
   const look = { x: 0, y: 0.08 };
   const targetLook = { x: 0, y: 0.08 };
   const glance = { x: 0, y: 0.08 };
@@ -295,6 +301,7 @@ function createLiveOrb(canvas, initial = {}) {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.viewport(0, 0, canvas.width, canvas.height);
+    paintDirty=true;
     return true;
   };
   if (!initGl()) return null;
@@ -309,9 +316,12 @@ function createLiveOrb(canvas, initial = {}) {
   let blinkAt = -1e4;
   let nextGlance = 600 + Math.random() * 900;
   let pointerAt = -Infinity;
+  let pointerBounds=null;
+  const updateBounds=()=>{pointerBounds=canvas.parentElement?.getBoundingClientRect()??null;};
   const resize = () => {
     const parent = canvas.parentElement;
     if (!parent) return false;
+    updateBounds();
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const w = parent.clientWidth;
     const h = parent.clientHeight;
@@ -327,9 +337,11 @@ function createLiveOrb(canvas, initial = {}) {
     return true;
   };
   const mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const moving = () => onScreen && !mqReduce.matches && document.visibilityState !== "hidden";
+  const moving = () => !options.paused && onScreen && !mqReduce.matches && document.visibilityState !== "hidden";
   function wake() {
-    if (raf || destroyed || lost) return;
+    if(destroyed||lost)return;
+    if(options.paused||!onScreen||document.visibilityState==="hidden"){cancelAnimationFrame(raf);raf=0;return;}
+    if(raf)return;
     last = performance.now();
     raf = requestAnimationFrame(tick);
   }
@@ -344,7 +356,8 @@ function createLiveOrb(canvas, initial = {}) {
     if (!options.interactive || mqReduce.matches || e.pointerType !== "mouse") return;
     const parent = canvas.parentElement;
     if (!parent) return;
-    const rect = parent.getBoundingClientRect();
+    const rect = pointerBounds;
+    if(!rect)return;
     if (rect.width <= 0 || rect.height <= 0) return;
     const dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
     const dy = (rect.top + rect.height / 2 - e.clientY) / (rect.height / 2);
@@ -354,21 +367,15 @@ function createLiveOrb(canvas, initial = {}) {
     if (onScreen) wake();
   };
   window.addEventListener("pointermove", onMove, { passive: true });
+  window.addEventListener("scroll", updateBounds,{capture:true,passive:true});
   const tick = (now) => {
     raf = 0;
-    if (lost) return;
+    if (lost||destroyed||options.paused||!onScreen||document.visibilityState==="hidden") return;
     const dt = Math.min(50, Math.max(0, now - last));
     last = now;
     const live = moving();
     if (live) clock += dt;
     const reduce = mqReduce.matches;
-    const resolved = resolveVariant(
-      options.variant,
-      options.color,
-      options.eyeColor,
-      options.colors,
-      dark
-    );
     const time = clock / 1e3;
     const steering = !reduce && options.interactive && now - pointerAt < IDLE_MS;
     if (!steering && live && clock >= nextGlance) {
@@ -380,7 +387,7 @@ function createLiveOrb(canvas, initial = {}) {
     const mood = options.conversationState ?? "idle";
     const moodLook = mood === "thinking" || mood === "planning" ? { x: 0.18, y: 0.32 } : mood === "searching" ? { x: reduce ? 0.15 : Math.sin(clock / 700) * 0.24, y: 0.05 } : mood === "error" ? { x: -0.16, y: -0.18 } : REST_LOOK;
     const goal = mood !== "idle" ? moodLook : steering ? targetLook : reduce ? REST_LOOK : glance;
-    const ease = live ? steering ? 0.16 : 0.1 : 1;
+    const ease = live ? frameEase(steering ? 0.16 : 0.1,dt) : 1;
     look.x += (goal.x - look.x) * ease;
     look.y += (goal.y - look.y) * ease;
     if (!reduce && options.blink && clock >= nextBlink) {
@@ -394,13 +401,6 @@ function createLiveOrb(canvas, initial = {}) {
       else if (bt < 0.1) b = 1;
       else if (bt < 0.18) b = 1 - (bt - 0.1) / 0.08;
     }
-    const body = hexToRgb(resolved.body);
-    const eye = hexToRgb(resolved.eye);
-    const palette = [0, 1, 2].map(
-      (i) => hexToRgb(
-        resolved.palette[i % resolved.palette.length] ?? WEBGL_COLORS[i]
-      )
-    );
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform2f(uResolution, canvas.width, canvas.height);
@@ -408,12 +408,11 @@ function createLiveOrb(canvas, initial = {}) {
     gl.uniform1f(uSpeed, reduce ? 0 : 0.55);
     gl.uniform2f(uLook, look.x, look.y);
     gl.uniform1f(uBlink, Math.max(b, mood === "error" ? 0.22 : 0));
-    gl.uniform1f(uMode, resolved.mode);
-    gl.uniform3f(uBody, body[0], body[1], body[2]);
-    gl.uniform3f(uEye, eye[0], eye[1], eye[2]);
-    gl.uniform3f(uC1, palette[0][0], palette[0][1], palette[0][2]);
-    gl.uniform3f(uC2, palette[1][0], palette[1][1], palette[1][2]);
-    gl.uniform3f(uC3, palette[2][0], palette[2][1], palette[2][2]);
+    if(paintDirty){
+      gl.uniform1f(uMode,paint.mode);
+      gl.uniform3f(uBody,...paint.body);gl.uniform3f(uEye,...paint.eye);
+      gl.uniform3f(uC1,...paint.palette[0]);gl.uniform3f(uC2,...paint.palette[1]);gl.uniform3f(uC3,...paint.palette[2]);paintDirty=false;
+    }
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     if (live && !destroyed) raf = requestAnimationFrame(tick);
   };
@@ -434,6 +433,7 @@ function createLiveOrb(canvas, initial = {}) {
     const next = resolveDark(options.theme);
     if (next === dark) return;
     dark = next;
+    updatePaint();
     wake();
   };
   const unwatchTheme = watchTheme(syncTheme);
@@ -459,10 +459,12 @@ function createLiveOrb(canvas, initial = {}) {
   wake();
   return {
     setOptions(next) {
+      const repaint=["variant","color","eyeColor","colors","theme"].some(k=>k in next&&next[k]!==options[k]);
       options = { ...options, ...next };
-      dark = resolveDark(options.theme);
+      if(repaint){dark = resolveDark(options.theme);updatePaint();}
       wake();
     },
+    stats(){return {clock,moving:moving(),look:{...look},paused:!!options.paused};},
     destroy() {
       destroyed = true;
       cancelAnimationFrame(raf);
@@ -473,6 +475,7 @@ function createLiveOrb(canvas, initial = {}) {
       mqReduce.removeEventListener("change", onReduce);
       unwatchTheme();
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("scroll",updateBounds,true);
       canvas.removeEventListener("webglcontextlost", onLost);
       canvas.removeEventListener("webglcontextrestored", onRestored);
       if (lost) canvas.style.visibility = "";
