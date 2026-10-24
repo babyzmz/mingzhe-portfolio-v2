@@ -154,4 +154,183 @@
     }));
   }
   for(const download of document.querySelectorAll('[data-download]'))download.addEventListener('click',()=>{let note=download.parentElement.querySelector('.download-state');if(!note){note=document.createElement('p');note.className='download-state';note.setAttribute('role','status');download.after(note);}note.textContent=t('download.started');});
+  // Footer signature: the wordmark is cut into glass shards that assemble on view, crack under the pointer and burst on click/tap.
+  // Decorative only (the signature is aria-hidden); the plain text stays in the DOM and is shown whenever motion is reduced or canvas is unavailable.
+  (()=>{
+    const word=document.querySelector('.footer-signature>span');
+    if(!word||!window.ResizeObserver||!window.IntersectionObserver)return;
+    const opt={shard:.09,irregularity:.6,crack:.6,crackRadius:.5,heal:.9,shatterRadius:.42,force:1,spin:1,depth:1,reassemble:1.1,stiffness:.55,glint:.8,intro:1.6,autoplay:6};
+    const rand=(a,b)=>a+Math.random()*(b-a);
+    let canvas=null,ctx=null,base=null,shards=[],geo=null,frame=0,last=0,visible=false,introDone=false,pointer=null,lastPointer=0,autoplayAt=0,rebuildTimer=0,observers=[];
+    function readStyle(){
+      const s=getComputedStyle(word),parent=getComputedStyle(word.parentElement);
+      return {text:word.textContent.trim(),size:parseFloat(s.fontSize),font:`${s.fontStyle} ${s.fontWeight} ${s.fontSize} ${s.fontFamily}`,spacing:parseFloat(s.letterSpacing)||0,color:parent.color,accent:getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#aaa4f6'};
+    }
+    function drawText(c,st,x,baseline){
+      c.font=st.font;c.fillStyle=st.color;c.textBaseline='alphabetic';
+      // Per-glyph advance keeps the CSS letter-spacing without relying on ctx.letterSpacing support.
+      for(const ch of st.text){c.fillText(ch,x,baseline);x+=c.measureText(ch).width+st.spacing;}
+    }
+    function build(){
+      const st=readStyle();if(!st.text||!st.size)return teardown();
+      const rect=word.getBoundingClientRect(),w=rect.width,h=rect.height,em=st.size,pad=Math.round(em*.7),dpr=Math.min(2,window.devicePixelRatio||1);
+      if(!canvas){canvas=document.createElement('canvas');canvas.className='shatter-canvas';ctx=canvas.getContext('2d');if(!ctx)return teardown(true);word.append(canvas);}
+      const cw=w+pad*2,ch=h+pad*2;
+      canvas.width=Math.round(cw*dpr);canvas.height=Math.round(ch*dpr);Object.assign(canvas.style,{left:-pad+'px',top:-pad+'px',width:cw+'px',height:ch+'px'});
+      // Base image of the whole word in canvas space, aligned with the CSS line box (line-height:1).
+      base=document.createElement('canvas');base.width=canvas.width;base.height=canvas.height;
+      const b=base.getContext('2d',{willReadFrequently:true});b.scale(dpr,dpr);b.font=st.font;
+      const m=b.measureText(st.text),asc=m.fontBoundingBoxAscent??m.actualBoundingBoxAscent,desc=m.fontBoundingBoxDescent??m.actualBoundingBoxDescent;
+      drawText(b,st,pad,pad+(h-(asc+desc))/2+asc);
+      const mask=b.getImageData(0,0,base.width,base.height).data;
+      // Jittered grid -> triangles; keep the ones that cover ink.
+      const size=Math.max(7,em*opt.shard),jit=size*.42*opt.irregularity,x0=pad-size*.5,y0=pad-size*.5,cols=Math.ceil((w+size)/size),rows=Math.ceil((h+size)/size),pts=[];
+      for(let j=0;j<=rows;j++)for(let i=0;i<=cols;i++){const edge=i===0||j===0||i===cols||j===rows;pts.push([x0+i*size+(edge?0:rand(-jit,jit)),y0+j*size+(edge?0:rand(-jit,jit))]);}
+      const P=(i,j)=>pts[j*(cols+1)+i],tris=[];
+      for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+        const a=P(i,j),b2=P(i+1,j),c=P(i+1,j+1),d=P(i,j+1);
+        if(Math.random()<.5)tris.push([a,b2,c],[a,c,d]);else tris.push([a,b2,d],[b2,c,d]);
+      }
+      const accent=st.accent;shards=[];
+      for(const t of tris){
+        const minX=Math.floor(Math.min(t[0][0],t[1][0],t[2][0])),minY=Math.floor(Math.min(t[0][1],t[1][1],t[2][1])),maxX=Math.ceil(Math.max(t[0][0],t[1][0],t[2][0])),maxY=Math.ceil(Math.max(t[0][1],t[1][1],t[2][1]));
+        let ink=0;
+        for(let y=minY;y<maxY&&!ink;y+=2)for(let x=minX;x<maxX;x+=2){
+          if(!inside(t,x,y))continue;
+          const px=Math.round(x*dpr),py=Math.round(y*dpr);
+          if(px>=0&&py>=0&&px<base.width&&py<base.height&&mask[(py*base.width+px)*4+3]>24){ink=1;break;}
+        }
+        if(!ink)continue;
+        const cx=(t[0][0]+t[1][0]+t[2][0])/3,cy=(t[0][1]+t[1][1]+t[2][1])/3,sw=maxX-minX+2,sh=maxY-minY+2;
+        // Front sprite: the ink inside the triangle. Back sprite: the same silhouette in accent, seen while a shard tumbles.
+        const front=document.createElement('canvas');front.width=Math.ceil(sw*dpr);front.height=Math.ceil(sh*dpr);
+        const f=front.getContext('2d');f.scale(dpr,dpr);f.translate(1-minX,1-minY);tri(f,t);f.clip();f.setTransform(1,0,0,1,0,0);f.drawImage(base,Math.round((1-minX)*dpr),Math.round((1-minY)*dpr));
+        const back=document.createElement('canvas');back.width=front.width;back.height=front.height;
+        const k=back.getContext('2d');k.drawImage(front,0,0);k.globalCompositeOperation='source-in';k.fillStyle=accent;k.fillRect(0,0,back.width,back.height);
+        shards.push({t,cx,cy,front,back,ox:minX-1-cx,oy:minY-1-cy,sign:Math.random()<.5?1:-1,cut:[0,1,2].filter(()=>Math.random()<.4),sw,sh,x:0,y:0,z:0,a:0,b:0,r:0,vx:0,vy:0,vz:0,va:0,vb:0,vr:0,alpha:1,mode:0,release:0,crack:0,flash:0});
+      }
+      geo={pad,em,dpr,w,h,cw,ch};
+      word.classList.add('is-shattering');
+      if(!introDone&&visible)assemble();else wake();
+    }
+    function inside(t,x,y){
+      const s=(p,q)=>(q[0]-p[0])*(y-p[1])-(q[1]-p[1])*(x-p[0]),d1=s(t[0],t[1]),d2=s(t[1],t[2]),d3=s(t[2],t[0]);
+      return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));
+    }
+    function tri(c,t){c.beginPath();c.moveTo(t[0][0],t[0][1]);c.lineTo(t[1][0],t[1][1]);c.lineTo(t[2][0],t[2][1]);c.closePath();}
+    function assemble(){
+      introDone=true;const now=performance.now(),{em,w}=geo;
+      for(const s of shards){
+        const ang=rand(0,Math.PI*2),dist=rand(.35,1.1)*em*.6;
+        Object.assign(s,{x:Math.cos(ang)*dist,y:Math.sin(ang)*dist,z:rand(.4,1.4)*opt.depth,a:rand(-3,3),b:rand(-3,3),r:rand(-1.5,1.5),vx:0,vy:0,vz:0,va:0,vb:0,vr:0,alpha:0,mode:1,crack:0,
+          release:now+opt.intro*1000*(.15+.55*((s.cx-geo.pad)/Math.max(1,w))+rand(0,.12))});
+      }
+      autoplayAt=now+opt.intro*1000+opt.autoplay*1000;wake();
+    }
+    function shatter(px,py,strength=1){
+      const now=performance.now(),{em}=geo,R=opt.shatterRadius*em;
+      for(const s of shards){
+        const dx=s.cx-px,dy=s.cy-py,d=Math.hypot(dx,dy);
+        if(d<R){
+          const n=d||1,sp=opt.force*strength*em*rand(2.2,5)*(1-d/R*.45),dir=Math.atan2(dy,dx)+rand(-.5,.5),spin=opt.spin*rand(4,13);
+          Object.assign(s,{mode:1,release:now+opt.reassemble*1000*rand(.85,1.15),vx:Math.cos(dir)*sp+dx/n*em*.3,vy:Math.sin(dir)*sp,vz:opt.depth*rand(.8,2.6)*strength,va:spin*rand(-1,1),vb:spin*rand(-1,1),vr:rand(-1,1)*spin*.6,flash:0});
+        }else if(d<R*1.35)s.crack=Math.max(s.crack,opt.crack*(1-(d-R)/(R*.35)));
+      }
+      wake();
+    }
+    function step(now){
+      frame=0;const dt=Math.min(.05,(now-(last||now))/1000);last=now;
+      const k=30+230*opt.stiffness,damp=2*Math.sqrt(k)*.72,drag=Math.exp(-2.4*dt),heal=dt/opt.heal;
+      let busy=false;
+      if(pointer&&geo){
+        const r=opt.crackRadius*geo.em;
+        for(const s of shards){const d=Math.hypot(s.cx-pointer.x,s.cy-pointer.y);if(d<r)s.crack=Math.max(s.crack,opt.crack*(1-d/r)**1.5);}
+      }
+      for(const s of shards){
+        if(s.mode===1){
+          if(now<s.release){s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;s.a+=s.va*dt;s.b+=s.vb*dt;s.r+=s.vr*dt;s.vx*=drag;s.vy*=drag;s.vz*=drag;s.va*=drag;s.vb*=drag;s.vr*=drag;}
+          else{s.mode=2;for(const p of ['a','b','r'])s[p]=Math.atan2(Math.sin(s[p]),Math.cos(s[p]));}
+        }
+        if(s.mode===2){
+          for(const [p,v] of [['x','vx'],['y','vy'],['z','vz'],['a','va'],['b','vb'],['r','vr']]){s[v]+=(-k*s[p]-damp*s[v])*dt;s[p]+=s[v]*dt;}
+          s.alpha=Math.min(1,s.alpha+dt*2.6);
+          if(Math.abs(s.x)+Math.abs(s.y)<.35&&Math.abs(s.z)<.01&&Math.abs(s.a)+Math.abs(s.b)+Math.abs(s.r)<.02&&Math.abs(s.vx)+Math.abs(s.vy)<12){
+            Object.assign(s,{x:0,y:0,z:0,a:0,b:0,r:0,vx:0,vy:0,vz:0,va:0,vb:0,vr:0,alpha:1,mode:0,flash:opt.glint});
+          }
+        }
+        if(s.crack>0)s.crack=Math.max(0,s.crack-heal);
+        if(s.flash>0)s.flash=Math.max(0,s.flash-dt*2.6);
+        if(s.mode||s.crack||s.flash)busy=true;
+      }
+      if(visible&&opt.autoplay&&!pointer&&introDone&&now>=autoplayAt&&now-lastPointer>opt.autoplay*1000&&shards.length){
+        const s=shards[Math.floor(Math.random()*shards.length)];shatter(s.cx,s.cy,.75);autoplayAt=now+opt.autoplay*1000;
+      }
+      render();
+      if(busy||(visible&&(pointer||opt.autoplay)))frame=requestAnimationFrame(step);else last=0;
+    }
+    function render(){
+      if(!geo)return;const {dpr,em}=geo;
+      ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(base,0,0);ctx.setTransform(dpr,0,0,dpr,0,0);
+      const moving=[];
+      for(const s of shards){
+        if(s.mode)moving.push(s);
+        else if(s.crack>.12)moving.push(s);
+      }
+      if(!moving.length&&!shards.some(s=>s.flash>.01))return;
+      // Punch every displaced shard out of the base in one path, so the untouched glass has no seams.
+      ctx.globalCompositeOperation='destination-out';ctx.beginPath();
+      for(const s of moving){const t=s.t;ctx.moveTo(t[0][0],t[0][1]);ctx.lineTo(t[1][0],t[1][1]);ctx.lineTo(t[2][0],t[2][1]);ctx.closePath();}
+      ctx.fill();ctx.globalCompositeOperation='source-over';
+      for(const s of moving){
+        let x=s.x,y=s.y,r=s.r;
+        if(!s.mode){
+          // Hairline crack: lift each piece a hair away from its neighbours and draw the gap.
+          const c=s.crack,dx=s.cx-(pointer?.x??s.cx),dy=s.cy-(pointer?.y??s.cy),n=Math.hypot(dx,dy)||1;
+          x=dx/n*c*em*.012;y=dy/n*c*em*.012;r=c*.04*s.sign;
+        }
+        const tiltA=Math.cos(s.a),tiltB=Math.cos(s.b),scale=1+s.z*.35,face=tiltA*tiltB>=0;
+        ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,s.alpha*(1-Math.max(0,s.z-1.6)*.6)));
+        ctx.translate(s.cx+x,s.cy+y);ctx.rotate(r);ctx.scale(scale*Math.max(.04,Math.abs(tiltA)),scale*Math.max(.04,Math.abs(tiltB)));
+        ctx.drawImage(face?s.front:s.back,s.ox,s.oy,s.sw,s.sh);
+        const glint=opt.glint*(1-Math.abs(tiltA*tiltB))*(s.mode?1:0);
+        if(face&&glint>.02){ctx.globalAlpha*=Math.min(1,glint*.7);ctx.drawImage(s.back,s.ox,s.oy,s.sw,s.sh);}
+        if(!s.mode&&s.crack>.05&&s.cut.length){
+          // Only some edges of each piece open up, so the fracture reads as cracks rather than a mesh.
+          ctx.globalAlpha=Math.min(1,s.crack*1.3);ctx.globalCompositeOperation='destination-out';ctx.lineWidth=Math.max(.7,em*.005);ctx.beginPath();
+          for(const i of s.cut){const p=s.t[i],q=s.t[(i+1)%3];ctx.moveTo(p[0]-s.cx,p[1]-s.cy);ctx.lineTo(q[0]-s.cx,q[1]-s.cy);}
+          ctx.stroke();ctx.globalCompositeOperation='source-over';
+        }
+        ctx.restore();
+      }
+      for(const s of shards)if(!s.mode&&s.flash>.01){ctx.globalAlpha=Math.min(1,s.flash*.8);ctx.drawImage(s.back,s.cx+s.ox,s.cy+s.oy,s.sw,s.sh);}
+      ctx.globalAlpha=1;
+    }
+    function wake(){if(!frame&&geo){last=0;frame=requestAnimationFrame(step);}}
+    function local(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*geo.cw/r.width,y:(e.clientY-r.top)*geo.ch/r.height};}
+    const onMove=e=>{if(!geo||e.pointerType==='touch')return;pointer=local(e);lastPointer=performance.now();wake();};
+    const onLeave=()=>{pointer=null;lastPointer=performance.now();};
+    const onDown=e=>{if(!geo)return;const p=local(e);lastPointer=performance.now();autoplayAt=lastPointer+opt.autoplay*1000;shatter(p.x,p.y);};
+    function schedule(){clearTimeout(rebuildTimer);rebuildTimer=setTimeout(()=>{if(canvas||!reduced.matches)build();},120);}
+    function start(){
+      if(observers.length)return;
+      word.addEventListener('pointermove',onMove);word.addEventListener('pointerleave',onLeave);word.addEventListener('pointerdown',onDown);
+      const io=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible&&geo&&!introDone)assemble();if(visible)wake();},{threshold:.35});
+      // Rebuild when the language switch rewrites the word or the layout changes size.
+      const ro=new ResizeObserver(schedule),mo=new MutationObserver(()=>{if(!word.contains(canvas)&&canvas)word.append(canvas);schedule();});
+      io.observe(word);ro.observe(word);mo.observe(word,{childList:true,characterData:true,subtree:true});
+      observers=[io,ro,mo];
+      (document.fonts?.ready||Promise.resolve()).then(build);
+    }
+    function teardown(keepListeners){
+      cancelAnimationFrame(frame);frame=0;geo=null;shards=[];
+      canvas?.remove();canvas=null;ctx=null;base=null;word.classList.remove('is-shattering');
+      if(keepListeners)return;
+      observers.forEach(o=>o.disconnect());observers=[];
+      word.removeEventListener('pointermove',onMove);word.removeEventListener('pointerleave',onLeave);word.removeEventListener('pointerdown',onDown);
+    }
+    const sync=()=>reduced.matches?teardown():start();
+    reduced.addEventListener?.('change',sync);sync();
+    // Glass colours are sampled from CSS, so follow a theme change.
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',schedule);
+  })();
 })();

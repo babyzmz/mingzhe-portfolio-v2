@@ -54,3 +54,5 @@ h1,h2,h3,summary{overflow-wrap:break-word;text-wrap:balance}p,li,figcaption{over
 .lang-switch:lang(en){font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif}
 @media(hover:hover) and (pointer:fine){.lang-switch:hover{border-color:var(--accent);color:var(--accent)}}
 @media(max-width:767px){.button{white-space:normal;text-align:center}.site-header nav{gap:14px}.lang-switch{padding:5px 11px;min-height:34px}:lang(en) .scene-copy h3{font-size:32px}:lang(en) .story-top h2,:lang(en) .questions h2{font-size:32px}}
+.site-footer{overflow:clip}.footer-signature>span{position:relative}.footer-signature>span.is-shattering{color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}.shatter-canvas{position:absolute;display:block;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.shatter-canvas{display:none}.footer-signature>span.is-shattering{color:inherit}}
